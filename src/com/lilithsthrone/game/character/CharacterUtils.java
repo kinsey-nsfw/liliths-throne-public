@@ -1,5 +1,4 @@
 package com.lilithsthrone.game.character;
-
 import java.io.File;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
