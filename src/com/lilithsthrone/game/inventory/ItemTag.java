@@ -1,5 +1,5 @@
 package com.lilithsthrone.game.inventory;
-import java.util.List;
+import java.util.List;
 
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
@@ -12,11 +12,11 @@ import com.lilithsthrone.utils.Util;
 public enum ItemTag {
 
 	HIDDEN_IN_DEBUG_SPAWNER(false),
-	
+
 	REMOVE_FROM_DEBUG_SPAWNER(false),
 
 	NOT_FOR_SALE(false),
-	
+
 	REINDEER_GIFT(false), // Can be found in the presents that the reindeer sell (who appear in Dominion during winter months).
 	SOLD_BY_RALPH(false), // Will also be used for any future consumable and miscellaneous item vendors.
 	SOLD_BY_NYAN(false), // Clothing
@@ -30,12 +30,12 @@ public enum ItemTag {
 	ATTRIBUTE_TF_ITEM(false),
 	RACIAL_TF_ITEM(false),
 	MISC_TF_ITEM(false), // Fetish or non-racial body part transformations
-	BOOK(false), 
+	BOOK(false),
 	GIFT(false),
 	DOMINION_ALLEYWAY_SPAWN(false),
 	SUBMISSION_TUNNEL_SPAWN(false),
 	BAT_CAVERNS_SPAWN(false),
-	
+
 	//-------------- WEAPONS & CLOTHING --------------//
 
 	REVEALS_CONCEALABLE_SLOT(false), // If a piece of clothing has this tag, it will always be visible, even if another item of clothing is concealing its slot. (Used for spreader bar.)
@@ -44,11 +44,11 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourSex(Cannot conceal any body parts)]"),
 			false),
-	
+
 	WEAPON_BLADE(false), // Should be added to all weapons that use an arcane blade
-	
+
 	WEAPON_UNARMED(false), // Should be added to all weapons that should use unarmed damage calculations instead of melee
-	
+
 	DRESS(false), // For helping to generate clothing in CharacterUtils
 
 	SPREADS_FEET( // Prevents double foot actions, like wrap-around footjobs
@@ -82,7 +82,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourSex(Sex-equip enabled)]"),
 			false),
-	
+
 	// Self-explanatory requirements in order to equip this clothing:
 	REQUIRES_PENIS(
 			Util.newArrayListOfValues(
@@ -104,7 +104,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourSex(Requires fuckable nipples)]"),
 			false),
-	
+
 	// These 'FITS' tags are used to check for whether clothing is suitable for certain body parts. They should be pretty self-explanatory.
 	FITS_HOOFS_EXCLUSIVE(
 			Util.newArrayListOfValues(
@@ -114,7 +114,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourBestial(Fits hoofs)]"),
 			false),
-	
+
 	FITS_TALONS_EXCLUSIVE(
 			Util.newArrayListOfValues(
 					"[style.colourBestial(Only fits talons)]"),
@@ -123,7 +123,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourBestial(Fits talons)]"),
 			false),
-	
+
 	FITS_HARPY_WINGS_EXCLUSIVE(
 			Util.newArrayListOfValues(
 					"[style.colourBestial(Only fits arm-wings)]"),
@@ -132,7 +132,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourBestial(Fits arm-wings)]"),
 			false),
-	
+
 	FITS_NON_BIPED_BODY_HUMANOID(
 			Util.newArrayListOfValues(
 					"[style.colourHuman(Fits humanoid parts of non-biped bodies)]"),
@@ -158,7 +158,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourTerrible(Blocks groping actions)]"),
 			false),
-	
+
 	PREVENTS_ERECTION_PHYSICAL( // Prevents the wearer from getting an erection during sex, by means of physically limiting the space into which the erection could take shape (i.e. chastity cages). As of 0.3.1, only affects descriptors.
 			Util.newArrayListOfValues(
 					"[style.colourTerrible(Prevents erection)]"),
@@ -167,15 +167,15 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourTerrible(Prevents erection)]"),
 			false),
-	
+
 	// Sex-related clothing:
 
 	/**<b>IMPORTANT</b> This tag should only ever be given to clothing going into the PENIS InventorySlot, as otherwise it will throw errors.*/
 	CONDOM(true), // Gives this clothing condom behaviour
-	
-	
+
+
 	// To detect whether creampies should leak out or not:
-	
+
 	PLUGS_ANUS( // Counts as being inserted into the wearer's anus. E.g. butt plugs or anal beads
 			Util.newArrayListOfValues(
 					"[style.colourSex(Plugs asshole (does not get dirty from creampies))]"),
@@ -184,7 +184,7 @@ public enum ItemTag {
 			Util.newArrayListOfValues(
 					"[style.colourSex(Seals asshole (does not get dirty from creampies))]"),
 			true),
-	
+
 	PLUGS_VAGINA( // Counts as being inserted into the wearer's vagina. E.g. insertable dildo
 			Util.newArrayListOfValues(
 					"[style.colourSex(Plugs pussy (does not get dirty from creampies))]"),
@@ -202,7 +202,7 @@ public enum ItemTag {
 			}
 		}
 	},
-	
+
 	PLUGS_NIPPLES( // Counts as being inserted into the wearer's nipples. E.g. insertable nipple-dildos
 			Util.newArrayListOfValues(
 					"[style.colourSex(Plugs nipples (does not get dirty from creampies))]"),
@@ -212,7 +212,7 @@ public enum ItemTag {
 					"[style.colourSex(Seals nipples (does not get dirty from creampies))]"),
 			true),
 
-	
+
 	DILDO_TINY( // 3 inches
 			Util.newArrayListOfValues(
 					"[style.colourSex(3-inch dildo)]"),
@@ -269,5 +269,5 @@ public enum ItemTag {
 	public boolean isSexToy() {
 		return sexToy;
 	}
-	
+
 }

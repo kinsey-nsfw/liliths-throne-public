@@ -1,5 +1,5 @@
 package com.lilithsthrone.game.dialogue.utils;
-import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,16 +55,16 @@ import com.lilithsthrone.utils.comparators.ClothingZLayerComparator;
  * @author Innoxia
  */
 public class InventoryDialogue {
-	
+
 	private static final int IDENTIFICATION_PRICE = 400;
 	private static final int IDENTIFICATION_ESSENCE_PRICE = 3;
-	
+
 	private static AbstractItem item;
 	private static AbstractClothing clothing;
 	private static AbstractWeapon weapon;
 	private static InventorySlot weaponSlot;
 	private static GameCharacter owner;
-	
+
 	private static NPC inventoryNPC;
 	private static InventoryInteraction interactionType;
 
@@ -77,9 +77,9 @@ public class InventoryDialogue {
 
 	private static String inventoryView() {
 		inventorySB = new StringBuilder();
-		
+
 		inventorySB.append(RenderingEngine.ENGINE.getInventoryPanel(inventoryNPC, buyback));
-		
+
 		return inventorySB.toString();
 	}
 
@@ -103,25 +103,25 @@ public class InventoryDialogue {
 
 	private static String unequipAll(GameCharacter character) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		for(int i=0; i<character.getArmRows(); i++) {
 			sb.append(character.unequipMainWeapon(i, false, character.isPlayer()));
 			sb.append(character.unequipOffhandWeapon(i, false, character.isPlayer()));
 		}
-		
+
 		List<AbstractClothing> zlayerClothing = new ArrayList<>(character.getClothingCurrentlyEquipped());
 		zlayerClothing.sort(new ClothingZLayerComparator());
-		
-		for(AbstractClothing c : zlayerClothing) { 
+
+		for(AbstractClothing c : zlayerClothing) {
 			if(!Main.game.isInSex() || !c.getSlotEquippedTo().isJewellery()) {
 				character.unequipClothingIntoInventory(c, true, Main.game.getPlayer());
 				sb.append("<p style='text-align:center;'>"+character.getUnequipDescription()+"</p>");
 			}
 		}
-		
+
 		return sb.toString();
 	}
-	
+
 	/**
 	 * The main DialogueNode. From here, the player can gain access to all parts
 	 * of their inventory.
@@ -132,7 +132,7 @@ public class InventoryDialogue {
 			if(!Main.game.isInNewWorld()) {
 				return "Evening's Attire";
 			}
-			
+
 			if (Main.game.getDialogueFlags().values.contains(DialogueFlagValue.quickTrade) && !Main.game.isInSex() && !Main.game.isInCombat()) {
 				return "Inventory (Quick-Manage is <b style='color:" + Colour.GENERIC_GOOD.toWebHexString() + ";'>ON</b>)";
 			} else {
@@ -148,10 +148,10 @@ public class InventoryDialogue {
 		@Override
 		public String getContent() {
 			UtilText.nodeContentSB.setLength(0);
-			
+
 			if (inventoryNPC!=null && interactionType == InventoryInteraction.TRADING) {
 				UtilText.nodeContentSB.append(inventoryNPC.getTraderDescription());
-				
+
 			} else if(interactionType==InventoryInteraction.CHARACTER_CREATION) {
 				return CharacterCreation.getCheckingClothingDescription();
 			}
@@ -171,23 +171,23 @@ public class InventoryDialogue {
 //					return WEAPON_INVENTORY.getResponse(responseTab, index);
 //				}
 //			}
-			
+
 			return UtilText.nodeContentSB.toString();
 		}
 
 		public String getResponseTabTitle(int index) {
 			return getGeneralResponseTabTitle(index);
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			//TODO sex end
 			// What does that even mean? BlobSweats
-			
+
 			if (index == 0) {
 				return getCloseInventoryResponse();
 			}
-			
+
 			if(responseTab==1) {
 				if(item!=null) {
 					return ITEM_INVENTORY.getResponse(responseTab, index);
@@ -220,7 +220,7 @@ public class InventoryDialogue {
 
 					} else if (index == 3) {
 						return new Response("Replace all", "You cannot do this while fighting someone!", null);
-						
+
 					} else if (index == 4) {
 						return new Response("Unequip all", "You cannot do this while fighting someone!", null);
 
@@ -236,7 +236,7 @@ public class InventoryDialogue {
 					} else {
 						return null;
 					}
-					
+
 				case FULL_MANAGEMENT:
 					if (index == 1) {
 						if(inventoryNPC == null ) {
@@ -479,7 +479,7 @@ public class InventoryDialogue {
 								|| Main.game.getPlayer().isCoverableAreaVisible(CoverableArea.VAGINA)
 								|| (Main.game.getPlayer().getClothingInSlot(InventorySlot.FOOT)==null && Main.game.getPlayer().getLegType().equals(LegType.HUMAN))) {
 							return new Response("To the stage", "You need to be wearing clothing that covers your body, as well as a pair of shoes.", null);
-							
+
 						} else {
 							return new Response("To the stage", "You're ready to approach the stage now.", CharacterCreation.CHOOSE_BACKGROUND) {
 								@Override
@@ -492,7 +492,7 @@ public class InventoryDialogue {
 								}
 							};
 						}
-						
+
 					} else if(index == 2){
 						if(Main.game.getPlayer().getClothingCurrentlyEquipped().isEmpty()){
 							return new Response("Unequip all", "You're currently naked, there's nothing to be unequipped.", null);
@@ -509,7 +509,7 @@ public class InventoryDialogue {
 					} else {
 						return null;
 					}
-					
+
 				case TRADING:
 					if (index == 1) {
 						if(inventoryNPC != null ||Main.game.getPlayerCell().getInventory().getInventorySlotsTaken()==0 || Main.game.isInCombat() || Main.game.isInSex()) {
@@ -660,9 +660,9 @@ public class InventoryDialogue {
 								@Override
 								public void effects(){
 									responseSB.setLength(0);
-									
+
 									responseSB.append(unequipAll(Main.game.getPlayer()));
-									
+
 									Main.sex.setUnequipClothingText(null, responseSB.toString());
 									Main.mainController.openInventory();
 									Main.sex.endSexTurn(SexActionUtility.CLOTHING_REMOVAL);
@@ -740,7 +740,7 @@ public class InventoryDialogue {
 						return null;
 					}
 			}
-			
+
 			return null;
 		}
 
@@ -765,7 +765,7 @@ public class InventoryDialogue {
 		public String getHeaderContent() {
 			return inventoryView();
 		}
-		
+
 		@Override
 		public String getContent() {
 			return getItemDisplayPanel(item.getSVGString(),
@@ -777,20 +777,20 @@ public class InventoryDialogue {
 									? inventoryNPC.willBuy(item) && item.getItemType().isAbleToBeSold()
 											? "<p>"
 												+ inventoryNPC.getName("The") + " will buy it for " + UtilText.formatAsMoney(item.getPrice(inventoryNPC.getBuyModifier())) + "."
-											+ "</p>" 
+											+ "</p>"
 											: inventoryNPC.getName("The") + " doesn't want to buy this."
 										: "")
 							:(inventoryNPC != null && interactionType == InventoryInteraction.TRADING
 								? "<p>"
 										+ inventoryNPC.getName("The") + " will sell it for " + UtilText.formatAsMoney(item.getPrice(inventoryNPC.getSellModifier())) + "."
-									+ "</p>" 
+									+ "</p>"
 								: "")));
 		}
 
 		public String getResponseTabTitle(int index) {
 			return getGeneralResponseTabTitle(index);
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -801,36 +801,36 @@ public class InventoryDialogue {
 			}
 			// ****************************** ITEM BELONGS TO THE PLAYER ******************************
 			if(owner != null && owner.isPlayer()) {
-				
+
 				// ****************************** Interacting with the ground ******************************
 				if(inventoryNPC == null) {
 					boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasItem(item);
-					
+
 					switch(interactionType) {
 						case SEX:
 							String dropTitle = owner.getLocationPlace().isItemsDisappear()?"Drop ":"Store";
 							if(index == 1) {
 								return new Response(dropTitle+"(1)", "You can't drop items while masturbating.", null);
-								
+
 							} else if(index == 2) {
 								return new Response(dropTitle+"(5)", "You can't drop items while masturbating.", null);
-								
+
 							} else if(index == 3) {
 								return new Response(dropTitle+"(All)", "You can't drop items while masturbating.", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant items while masturbating.", null);
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedInSex()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use this during sex!", null);
-									
+
 								} else if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)",
@@ -846,17 +846,17 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", "You can only use one item at a time during sex!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
-						
+
 						default:
 							if(index == 1) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
@@ -886,18 +886,18 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 2) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(owner.getItemCount(item) < 5) {
 										return new Response("Drop (5)", "You don't have five " + item.getNamePlural() + " to give!", null);
-										
+
 									} else if(!item.getItemType().isAbleToBeDropped()) {
 										return new Response("Drop (5)", "You cannot drop the " + item.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Drop (5)", "This area is full, so you can't drop your " + item.getNamePlural() + " here!", null);
-										
+
 									} else {
 										return new Response("Drop (5)", "Drop five of your " + item.getNamePlural() + ".", INVENTORY_MENU){
 											@Override
@@ -909,13 +909,13 @@ public class InventoryDialogue {
 								} else {
 									if(owner.getItemCount(item) < 5) {
 										return new Response("Store (5)", "You don't have five " + item.getNamePlural() + " to give!", null);
-										
+
 									} else if(!item.getItemType().isAbleToBeDropped()) {
 										return new Response("Store (5)", "You cannot drop the " + item.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (5)", "This area is full, so you can't store your " + item.getNamePlural() + " here!", null);
-										
+
 									} else {
 										return new Response("Store (5)", "Store five of your " + item.getNamePlural() + " in this area.", INVENTORY_MENU){
 											@Override
@@ -925,7 +925,7 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 3) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(!item.getItemType().isAbleToBeDropped()) {
@@ -954,11 +954,11 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 5) {
 								if(item.getEnchantmentItemType(null)==null) {
 									return new Response("Enchant", "This item cannot be enchanted!", null);
-									
+
 								} else if(Main.game.isDebugMode()
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									return new Response("Enchant", "Enchant this item.", EnchantmentDialogue.ENCHANTMENT_MENU) {
@@ -967,15 +967,15 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(item);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant items yet...", null);
 								}
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
 								} else {
@@ -1001,14 +1001,14 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1040,50 +1040,50 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
 					}
-					
+
 				// ****************************** Interacting with an NPC ******************************
 				} else {
 					switch(interactionType) {
 						case COMBAT:
 							if(index == 1) {
 								return new Response("Give (1)", "You can't give someone items while fighting them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Give (5)", "You can't give someone items while fighting them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Give (All)", "You can't give someone items while fighting them!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant items while fighting someone!", null);
-								
+
 							} else if(index == 6) {
 								if(Main.game.getPlayer().isStunned()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use any items while you're stunned!", null);
-									
+
 								} else if(Combat.isCombatantDefeated(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use any items while you're defeated!", null);
-									
+
 								} else if(Main.game.getPlayer().getRemainingAP()<CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You need at least "+CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())+" AP to use this actions!", null);
-									
+
 								} else if (!item.isAbleToBeUsedInCombat()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use this during combat!", null);
-									
+
 								} else if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)",
@@ -1097,29 +1097,29 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", "You can only use one item at a time during combat!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								if(Main.game.getPlayer().isStunned()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use any items while you're stunned!", null);
-									
+
 								} else if(Combat.isCombatantDefeated(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use any items while you're defeated!", null);
-									
+
 								} else if(Main.game.getPlayer().getRemainingAP()<CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You need at least "+CombatMove.ITEM_USAGE.getAPcost(Main.game.getPlayer())+" AP to use this actions!", null);
-									
+
 								} else if (!item.isAbleToBeUsedInCombat()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (opponent)", "You cannot use this during combat!", null);
-									
+
 								} else if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (opponent)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(inventoryNPC)) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)", item.getUnableToBeUsedDescription(inventoryNPC), null);
 
@@ -1156,7 +1156,7 @@ public class InventoryDialogue {
 											Main.mainController.openInventory();
 										}
 									};
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)",
@@ -1170,17 +1170,17 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 12) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (opponent)", "You can only use one item at a time during combat!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case FULL_MANAGEMENT:  case CHARACTER_CREATION:
 							boolean inventoryFull = inventoryNPC.isInventoryFull() && !inventoryNPC.hasItem(item);
-							
+
 							if(index == 1) {
 								if(!item.getItemType().isAbleToBeDropped()) {
 									return new Response("Give (1)", "You cannot give away the " + item.getName() + "!", null);
@@ -1193,7 +1193,7 @@ public class InventoryDialogue {
 										transferItems(Main.game.getPlayer(), inventoryNPC, item, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(!item.getItemType().isAbleToBeDropped()) {
 									return new Response("Give (5)", "You cannot give away the " + item.getName() + "!", null);
@@ -1210,7 +1210,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Give (5)", "You don't have five " + item.getNamePlural() + " to give!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(!item.getItemType().isAbleToBeDropped()) {
 									return new Response("Give (All)", "You cannot give away the " + item.getName() + "!", null);
@@ -1223,11 +1223,11 @@ public class InventoryDialogue {
 										transferItems(Main.game.getPlayer(), inventoryNPC, item, Main.game.getPlayer().getItemCount(item));
 									}
 								};
-								
+
 							} else if(index == 5) {
 								if(item.getEnchantmentItemType(null)==null) {
 									return new Response("Enchant", "This item cannot be enchanted!", null);
-									
+
 								} else if(Main.game.isDebugMode()
 											|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 										return new Response("Enchant", "Enchant this item.", EnchantmentDialogue.ENCHANTMENT_MENU) {
@@ -1236,18 +1236,18 @@ public class InventoryDialogue {
 												return EnchantmentDialogue.getEnchantmentMenu(item);
 											}
 										};
-								
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant items yet...", null);
 								}
-							
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1271,14 +1271,14 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1310,17 +1310,17 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (them)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(inventoryNPC)) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)", item.getUnableToBeUsedDescription(inventoryNPC), null);
-									
+
 								} else if(item.isBreakOutOfInventory()) {
 									return new ResponseEffectsOnly(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)",
@@ -1331,7 +1331,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else if(item.getItemType().isFetishGiving()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC),
@@ -1362,7 +1362,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC),
@@ -1377,10 +1377,10 @@ public class InventoryDialogue {
 							} else if(index == 12) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(inventoryNPC)) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)", item.getUnableToBeUsedDescription(inventoryNPC), null);
-									
+
 								} else if(item.isBreakOutOfInventory()) {
 									return new ResponseEffectsOnly(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" all (them)",
@@ -1394,7 +1394,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else if(item.getItemType().isFetishGiving()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC)
@@ -1433,7 +1433,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)",
 											item.getItemType().getUseTooltipDescription(owner, inventoryNPC)
@@ -1449,34 +1449,34 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case SEX:
 							if(index == 1) {
 								return new Response("Give (1)", "You can't give someone items while having sex with them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Give (5)", "You can't give someone items while having sex with them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Give (All)", "You can't give someone items while having sex with them!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant items while having sex with someone!", null);
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedInSex()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use this during sex!", null);
-									
+
 								} else if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)",
@@ -1492,23 +1492,23 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", "You can only use one item at a time during sex!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								if (!item.isAbleToBeUsedInSex()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (partner)", "You cannot use this during sex!", null);
-									
+
 								} else if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (partner)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(inventoryNPC)) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)", item.getUnableToBeUsedDescription(inventoryNPC), null);
-									
+
 								} else if(item.getItemType().isFetishGiving()) {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)",
@@ -1528,7 +1528,7 @@ public class InventoryDialogue {
 											Main.sex.setSexStarted(true);
 										}
 									};
-									
+
 								} else if(item.getItemType().isTransformative()) {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)",
@@ -1548,7 +1548,7 @@ public class InventoryDialogue {
 											Main.sex.setSexStarted(true);
 										}
 									};
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)",
@@ -1564,19 +1564,19 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 12) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (partner)", "You can only use one item at a time during sex!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case TRADING:
 							if(index == 1) {
 								if(!item.getItemType().isAbleToBeSold()) {
 									return new Response("Sell (1)", "You cannot sell the " + item.getName() + "!", null);
-									
+
 								} else if (inventoryNPC.willBuy(item)) {
 									int sellPrice = item.getPrice(inventoryNPC.getBuyModifier());
 									return new Response("Sell (1) (" + UtilText.formatAsMoney(sellPrice, "span") + ")", "Sell the " + item.getName() + " for " + UtilText.formatAsMoney(sellPrice) + ".", INVENTORY_MENU){
@@ -1588,12 +1588,12 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Sell (1)", inventoryNPC.getName("The") + " doesn't want to buy this.", null);
 								}
-								
+
 							} else if(index == 2) {
 								if(Main.game.getPlayer().getItemCount(item) >= 5) {
 									if(!item.getItemType().isAbleToBeSold()) {
 										return new Response("Sell (5)", "You cannot sell the " + item.getName() + "!", null);
-										
+
 									} else if (inventoryNPC.willBuy(item)) {
 										int sellPrice = item.getPrice(inventoryNPC.getBuyModifier());
 										return new Response("Sell (5) (" + UtilText.formatAsMoney(sellPrice*5, "span") + ")", "Sell five of your " + item.getNamePlural() + " for " + UtilText.formatAsMoney(sellPrice*5) + ".", INVENTORY_MENU){
@@ -1605,15 +1605,15 @@ public class InventoryDialogue {
 									} else {
 										return new Response("Sell (5)", inventoryNPC.getName("The") + " doesn't want to buy these.", null);
 									}
-									
+
 								} else {
 									return new Response("Sell (5)", "You don't have five " + item.getNamePlural() + " to sell!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(!item.getItemType().isAbleToBeSold()) {
 									return new Response("Sell (All)", "You cannot sell the " + item.getName() + "!", null);
-									
+
 								} else if (inventoryNPC.willBuy(item)) {
 									int sellPrice = item.getPrice(inventoryNPC.getBuyModifier());
 									return new Response("Sell (All) (" + UtilText.formatAsMoney(sellPrice*Main.game.getPlayer().getItemCount(item), "span") + ")",
@@ -1626,11 +1626,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Sell (All)", inventoryNPC.getName("The") + " doesn't want to buy these.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(item.getEnchantmentItemType(null)==null) {
 									return new Response("Enchant", "This item cannot be enchanted!", null);
-									
+
 								} else if(Main.game.isDebugMode()
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									return new Response("Enchant", "Enchant this item.", EnchantmentDialogue.ENCHANTMENT_MENU) {
@@ -1639,18 +1639,18 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(item);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant items yet...", null);
 								}
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1673,14 +1673,14 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1711,56 +1711,56 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if (index == 9) {
 								return getBuybackResponse();
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)", UtilText.parse(inventoryNPC, "[npc.Name] doesn't want to use your items."), null);
-								
+
 							} else if(index == 12) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (them)", UtilText.parse(inventoryNPC, "[npc.Name] doesn't want to use your items."), null);
-								
+
 							} else {
 								return null;
 							}
 					}
 				}
-				
+
 			// ****************************** ITEM DOES NOT BELONG TO PLAYER ****************************** TODO
-				
+
 			} else {
 				// ****************************** Interacting with the ground ******************************
 				if(inventoryNPC == null) {
 					boolean inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasItem(item) && item.getRarity()!=Rarity.QUEST;
-					
+
 					switch(interactionType) {
 						case SEX:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't pick up items while masturbating.", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't pick up items while masturbating.", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't pick up items while masturbating.", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant items while masturbating.", null);
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedInSex()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You cannot use this during sex!", null);
-									
+
 								} else if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)",
@@ -1776,17 +1776,17 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", "You can only use one item at a time during sex!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
-					
+
 						default:
 							if(index == 1) {
 								if(inventoryFull) {
@@ -1798,7 +1798,7 @@ public class InventoryDialogue {
 										pickUpItems(Main.game.getPlayer(), item, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(inventoryFull) {
 									return new Response("Take (5)", "Your inventory is already full!", null);
@@ -1813,7 +1813,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Take (5)", "There aren't five " + item.getNamePlural() + " on the ground!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(inventoryFull) {
 									return new Response("Take (All)", "Your inventory is already full!", null);
@@ -1824,17 +1824,17 @@ public class InventoryDialogue {
 										pickUpItems(Main.game.getPlayer(), item, Main.game.getPlayerCell().getInventory().getItemCount(item));
 									}
 								};
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant items on the ground!", null);
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1858,14 +1858,14 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									if(item.isBreakOutOfInventory()) {
 										return new ResponseEffectsOnly(
@@ -1896,15 +1896,15 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
 					}
-					
+
 				// ****************************** Interacting with an NPC ******************************
 				} else {
 					boolean inventoryFull = false;
@@ -1912,38 +1912,38 @@ public class InventoryDialogue {
 						case COMBAT:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't take someone items while fighting them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't take someone items while fighting them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't take someone items while fighting them!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant someone else's items, especially not while fighting them!", null);
-								
+
 							} else if(index == 6) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", "You can't use someone else's items while fighting them!", null);
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (self)", "You can't use someone else's items while fighting them!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (opponent)", "You can't use make someone use an item while fighting them!", null);
-								
+
 							} else if(index == 12) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (opponent)", "You can't use make someone use an item while fighting them!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case FULL_MANAGEMENT:  case CHARACTER_CREATION:
 							inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasItem(item) && item.getRarity()!=Rarity.QUEST;
-						
+
 							if(index == 1) {
 								if(inventoryFull) {
 									return new Response("Take (1)", "Your inventory is already full!", null);
@@ -1954,7 +1954,7 @@ public class InventoryDialogue {
 										transferItems(inventoryNPC, Main.game.getPlayer(), item, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(inventoryFull) {
 									return new Response("Take (5)", "Your inventory is already full!", null);
@@ -1969,7 +1969,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Take (5)", UtilText.parse(inventoryNPC, "[npc.Name] doesn't have five " + item.getNamePlural() + "!"), null);
 								}
-								
+
 							} else if(index == 3) {
 								if(inventoryFull) {
 									return new Response("Take (All)", "Your inventory is already full!", null);
@@ -1980,17 +1980,17 @@ public class InventoryDialogue {
 										transferItems(inventoryNPC, Main.game.getPlayer(), item, inventoryNPC.getItemCount(item));
 									}
 								};
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant items owned by someone else!", null);
-								
+
 							} else if(index == 6) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)",
@@ -2003,14 +2003,14 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 7) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)",
@@ -2027,17 +2027,17 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (them)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if (!item.isAbleToBeUsed(inventoryNPC)) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)", item.getUnableToBeUsedDescription(inventoryNPC), null);
-									
+
 								} else if(item.isBreakOutOfInventory()) {
 									return new ResponseEffectsOnly(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)",
@@ -2048,7 +2048,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else if(item.getItemType().isFetishGiving()) {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)",
@@ -2081,7 +2081,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)",
@@ -2094,14 +2094,14 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 12) {
 								if (!item.isAbleToBeUsedFromInventory()) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)", item.getUnableToBeUsedFromInventoryDescription(), null);
-									
+
 								} else if(!item.isAbleToBeUsed(inventoryNPC)) {
 									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)", item.getUnableToBeUsedDescription(inventoryNPC), null);
-									
+
 								} else if(item.isBreakOutOfInventory()) {
 									return new ResponseEffectsOnly(
 											Util.capitaliseSentence(item.getItemType().getUseName()) +" all (them)",
@@ -2115,7 +2115,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else if(item.getItemType().isFetishGiving()) {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)",
@@ -2136,7 +2136,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else if(item.getItemType().isTransformative()) {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)",
@@ -2157,7 +2157,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 								} else {
 									return new Response(
 											Util.capitaliseSentence(item.getItemType().getUseName())+" all (them)",
@@ -2174,36 +2174,36 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case SEX:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't take someone's items while having sex with them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't take someone's items while having sex with them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't take someone's items while having sex with them!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant someone else's items, especially not while having sex with them!", null);
-								
+
 							} else if(index == 6) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "You can't use your partner's items during sex!", null);
 								//TODO
 //								if (!item.isAbleToBeUsedInSex()) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", "This cannot be used during sex!", null);
-//									
+//
 //								} else if (!item.isAbleToBeUsedFromInventory()) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (self)", item.getUnableToBeUsedFromInventoryDescription(), null);
-//									
+//
 //								} else if (!item.isAbleToBeUsed(Main.game.getPlayer())) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", item.getUnableToBeUsedDescription(Main.game.getPlayer()), null);
-//									
+//
 //								} else {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)",
 //											Util.capitaliseSentence(item.getItemType().getUseName()) + " the " + item.getName() + ".", Main.sex.SEX_DIALOGUE){
@@ -2217,25 +2217,25 @@ public class InventoryDialogue {
 //										}
 //									};
 //								}
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (self)", "You can only use one item at a time during sex!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (partner)", "You can't use your partner's items during sex!", null);
 								//TODO
 //								if (!item.isAbleToBeUsedInSex()) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (partner)", "This cannot be used during sex!", null);
-//									
+//
 //								} else if (!item.isAbleToBeUsedFromInventory()) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" (partner)", item.getUnableToBeUsedFromInventoryDescription(), null);
-//									
+//
 //								} else if (!item.isAbleToBeUsed(inventoryNPC)) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)", item.getUnableToBeUsedDescription(inventoryNPC), null);
-//									
+//
 //								} else if(item.getItemType().isFetishGiving()) {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)",
 //											"Get "+inventoryNPC.getName("the")+" to "+ item.getItemType().getUseName() + " the " + item.getName() + ".",
@@ -2272,7 +2272,7 @@ public class InventoryDialogue {
 //											Main.sex.setSexStarted(true);
 //										}
 //									};
-//									
+//
 //								} else {
 //									return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (partner)",
 //											"Get "+inventoryNPC.getName("the")+" to "+ item.getItemType().getUseName() + " the " + item.getName() + ".", Main.sex.SEX_DIALOGUE){
@@ -2286,17 +2286,17 @@ public class InventoryDialogue {
 //										}
 //									};
 //								}
-								
+
 							} else if(index == 12) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName())+" all (partner)", "You can only use one item at a time during sex!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case TRADING:
 							inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasItem(item)  && item.getRarity()!=Rarity.QUEST;
-							
+
 							if(index == 1) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():item.getPrice(inventoryNPC.getSellModifier());
 								if(inventoryFull) {
@@ -2311,7 +2311,7 @@ public class InventoryDialogue {
 										sellItems(inventoryNPC, Main.game.getPlayer(), item, 1, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():item.getPrice(inventoryNPC.getSellModifier());
 								if((buyback && Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<5)
@@ -2330,7 +2330,7 @@ public class InventoryDialogue {
 										sellItems(inventoryNPC, Main.game.getPlayer(), item, 5, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 3) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():item.getPrice(inventoryNPC.getSellModifier());
 								int count = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount():inventoryNPC.getItemCount(item);
@@ -2347,28 +2347,28 @@ public class InventoryDialogue {
 										sellItems(inventoryNPC, Main.game.getPlayer(), item, count, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant someone else's item!", null);
-								
+
 							} else if(index == 6) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (self)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you use [npc.her] items without buying them first."), null);
-								
+
 							} else if(index == 7) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (self)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you use [npc.her] items without buying them first."), null);
-								
+
 							} else if (index == 9) {
 								return getBuybackResponse();
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" (them)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to use the items that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else if(index == 12) {
 								return new Response(Util.capitaliseSentence(item.getItemType().getUseName()) +" all (them)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to use the items that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else {
 								return null;
 							}
@@ -2383,9 +2383,9 @@ public class InventoryDialogue {
 			return DialogueNodeType.INVENTORY;
 		}
 	};
-	
+
 	public static final DialogueNode WEAPON_INVENTORY = new DialogueNode("Weapon", "", true) {
-		
+
 		@Override
 		public String getLabel() {
 			if (Main.game.getDialogueFlags().values.contains(DialogueFlagValue.quickTrade) && !Main.game.isInSex() && !Main.game.isInCombat()) {
@@ -2394,12 +2394,12 @@ public class InventoryDialogue {
 				return "Inventory";
 			}
 		}
-		
+
 		@Override
 		public String getHeaderContent() {
 			return inventoryView();
 		}
-		
+
 		@Override
 		public String getContent() {
 			return getItemDisplayPanel(weapon.getSVGString(),
@@ -2410,13 +2410,13 @@ public class InventoryDialogue {
 									? inventoryNPC.willBuy(weapon)
 											? "<p>"
 												+ inventoryNPC.getName("The") + " will buy it for " + UtilText.formatAsMoney(weapon.getPrice(inventoryNPC.getBuyModifier())) + "."
-											+ "</p>" 
+											+ "</p>"
 											: inventoryNPC.getName("The") + " doesn't want to buy this."
 										: "")
 							:(inventoryNPC != null && interactionType == InventoryInteraction.TRADING
 								? "<p>"
 										+ inventoryNPC.getName("The") + " will sell it for " + UtilText.formatAsMoney(weapon.getPrice(inventoryNPC.getSellModifier())) + "."
-									+ "</p>" 
+									+ "</p>"
 								: "")));
 		}
 
@@ -2424,7 +2424,7 @@ public class InventoryDialogue {
 		public String getResponseTabTitle(int index) {
 			return getGeneralResponseTabTitle(index);
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -2433,54 +2433,54 @@ public class InventoryDialogue {
 			if(responseTab==0) {
 				return INVENTORY_MENU.getResponse(responseTab, index);
 			}
-			
+
 			// ****************************** ITEM BELONGS TO THE PLAYER ******************************
 			if(owner != null && owner.isPlayer()) {
-				
+
 				// ****************************** Interacting with the ground ******************************
 				if(inventoryNPC == null) {
 					boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasWeapon(weapon);
-					
+
 					switch(interactionType) {
 						case SEX:
 							String dropTitle = owner.getLocationPlace().isItemsDisappear()?"Drop ":"Store";
 							if(index == 1) {
 								return new Response(dropTitle+"(1)", "You can't drop your weapons while masturbating.", null);
-								
+
 							} else if(index == 2) {
 								return new Response(dropTitle+"(5)", "You can't drop your weapons while masturbating.", null);
-								
+
 							} else if(index == 3) {
 								return new Response(dropTitle+"(All)", "You can't drop your weapons while masturbating.", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye/Reforge", "You can't dye or reforge your weapons while masturbating.", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant weapons while masturbating.", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "You can't equip weapons while masturbating.", null);
-								
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", "You can't equip weapons while masturbating.", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
-							
+
 						default:
 							if(index == 1) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(!weapon.getWeaponType().isAbleToBeDropped()) {
 										return new Response("Drop (1)", "You cannot drop the " + weapon.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Drop (1)", "This area is full, so you can't drop your " + weapon.getName() + " here!", null);
-										
+
 									} else {
 										return new Response("Drop (1)", "Drop your " + weapon.getName() + ".", INVENTORY_MENU){
 											@Override
@@ -2492,7 +2492,7 @@ public class InventoryDialogue {
 								} else {
 									if(!weapon.getWeaponType().isAbleToBeDropped()) {
 										return new Response("Store (1)", "You cannot drop the " + weapon.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (1)", "This area is full, so you can't store your " + weapon.getName() + " here!", null);
 									} else {
@@ -2504,18 +2504,18 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 2) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(!weapon.getWeaponType().isAbleToBeDropped()) {
 										return new Response("Drop (5)", "You cannot drop the " + weapon.getName() + "!", null);
-										
+
 									} else if(owner.getWeaponCount(weapon) < 5) {
 										return new Response("Drop (5)", "You don't have five " + weapon.getNamePlural() + " to drop!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Drop (5)", "This area is full, so you can't drop your " + weapon.getNamePlural() + " here!", null);
-										
+
 									} else {
 										return new Response("Drop (5)", "Drop five of your " + weapon.getNamePlural() + ".", INVENTORY_MENU){
 											@Override
@@ -2527,13 +2527,13 @@ public class InventoryDialogue {
 								} else {
 									if(!weapon.getWeaponType().isAbleToBeDropped()) {
 										return new Response("Store (5)", "You cannot drop the " + weapon.getName() + "!", null);
-										
+
 									} else if(owner.getWeaponCount(weapon) < 5) {
 										return new Response("Store (5)", "You don't have five " + weapon.getNamePlural() + " to drop!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (5)", "This area is full, so you can't store your " + weapon.getNamePlural() + " here!", null);
-										
+
 									} else {
 										return new Response("Store (5)", "Store five of your " + weapon.getNamePlural() + " in this area.", INVENTORY_MENU){
 											@Override
@@ -2543,11 +2543,11 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 3) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Drop (All)", "You cannot drop the " + weapon.getName() + "!", null);
-									
+
 								} else if(owner.getLocationPlace().isItemsDisappear()) {
 									if(areaFull) {
 										return new Response("Drop (All)", "This area is full, so you can't drop your " + weapon.getNamePlural() + " here!", null);
@@ -2562,7 +2562,7 @@ public class InventoryDialogue {
 								} else {
 									if(!weapon.getWeaponType().isAbleToBeDropped()) {
 										return new Response("Store (All)", "You cannot drop the " + weapon.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (All)", "This area is full, so you can't store your " + weapon.getNamePlural() + " here!", null);
 									} else {
@@ -2574,7 +2574,7 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 										|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
@@ -2599,11 +2599,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye/Reforge", "You'll need to find a dye-brush or reforge hammer if you want to alter this weapon's properties.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(weapon.getEnchantmentItemType(null)==null) {
 									return new Response("Enchant", "This weapon cannot be enchanted!", null);
-									
+
 								} else if(Main.game.isDebugMode()
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									return new Response("Enchant", "Enchant this weapon.", EnchantmentDialogue.ENCHANTMENT_MENU) {
@@ -2612,11 +2612,11 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(weapon);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant weapons yet...", null);
 								}
-								
+
 							} else if(index == 6) {
 									return new Response("Equip Main (self)", "Equip the " + weapon.getName() + ".", INVENTORY_MENU){
 										@Override
@@ -2628,7 +2628,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 							} else if(index == 7) {
 								if(weapon.getWeaponType().isTwoHanded()) {
 									return new Response("Equip Offhand (self)",
@@ -2652,57 +2652,57 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
 					}
-					
+
 				// ****************************** Interacting with an NPC ******************************
 				} else {
 					switch(interactionType) {
 						case COMBAT:
 							if(index == 1) {
 								return new Response("Give (1)", "You can't give someone weapons while fighting them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Give (5)", "You can't give someone weapons while fighting them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Give (All)", "You can't give someone weapons while fighting them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye your weapons while fighting someone!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant weapons while fighting someone!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "You can't change weapons while fighting someone!", null);
-									
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", "You can't change weapons while fighting someone!", null);
-									
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response("Equip (opponent)", "You can't make your opponent equip a weapon!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case FULL_MANAGEMENT:  case CHARACTER_CREATION:
 							boolean inventoryFull = inventoryNPC.isInventoryFull() && !inventoryNPC.hasWeapon(weapon);
-							
+
 							if(index == 1) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Give (1)", "You cannot give away the " + weapon.getName() + "!", null);
-									
+
 								} else if(inventoryFull) {
 									return new Response("Give (1)", UtilText.parse(inventoryNPC, "[npc.NamePos] inventory is already full!"), null);
 								}
@@ -2712,11 +2712,11 @@ public class InventoryDialogue {
 										transferWeapons(Main.game.getPlayer(), inventoryNPC, weapon, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Give (5)", "You cannot give away the " + weapon.getName() + "!", null);
-									
+
 								} else if(inventoryFull) {
 									return new Response("Give (5)", UtilText.parse(inventoryNPC, "[npc.NamePos] inventory is already full!"), null);
 								}
@@ -2730,11 +2730,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Give (5)", "You don't have five " + weapon.getNamePlural() + " to give!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Give (All)", "You cannot give away the " + weapon.getName() + "!", null);
-									
+
 								} else if(inventoryFull) {
 									return new Response("Give (All)", UtilText.parse(inventoryNPC, "[npc.NamePos] inventory is already full!"), null);
 								}
@@ -2744,7 +2744,7 @@ public class InventoryDialogue {
 										transferWeapons(Main.game.getPlayer(), inventoryNPC, weapon, Main.game.getPlayer().getWeaponCount(weapon));
 									}
 								};
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 										|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
@@ -2769,11 +2769,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye/Reforge", "You'll need to find a dye-brush or reforge hammer if you want to alter this weapon's properties.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(weapon.getEnchantmentItemType(null)==null) {
 									return new Response("Enchant", "This weapon cannot be enchanted!", null);
-									
+
 								} else if(Main.game.isDebugMode()
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									return new Response("Enchant", "Enchant this weapon.", EnchantmentDialogue.ENCHANTMENT_MENU) {
@@ -2782,11 +2782,11 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(weapon);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant weapons yet...", null);
 								}
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "Equip the " + weapon.getName() + " as your main weapon.", INVENTORY_MENU){
 										@Override
@@ -2797,7 +2797,7 @@ public class InventoryDialogue {
 											resetPostAction();
 										}
 									};
-									
+
 							} else if(index == 7) {
 								if(weapon.getWeaponType().isTwoHanded()) {
 									return new Response("Equip Offhand (self)",
@@ -2815,15 +2815,15 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 //								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 //									return new Response(UtilText.parse(inventoryNPC, "Equip Main ([npc.Name])"), "You cannot give away the " + weapon.getName() + "!", null);
 //								}
-								
+
 								return new Response(UtilText.parse(inventoryNPC, "Equip Main ([npc.Name])"), UtilText.parse(inventoryNPC, "Make [npc.name] equip the "+weapon.getName()+" as [npc.her] main weapon."), INVENTORY_MENU){
 									@Override
 									public void effects(){
@@ -2833,7 +2833,7 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-							
+
 							} else if(index == 12) {
 //								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 //									return new Response(UtilText.parse(inventoryNPC, "Equip Main ([npc.Name])"), "You cannot give away the " + weapon.getName() + "!", null);
@@ -2854,48 +2854,48 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-							
+
 							} else {
 								return null;
 							}
-							
+
 						case SEX:
 							if(index == 1) {
 								return new Response("Give (1)", "You can't give someone weapons while having sex with them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Give (5)", "You can't give someone weapons while having sex with them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Give (All)", "You can't give someone weapons while having sex with them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye your weapons while having sex with someone!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant weapons while having sex with someone!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "You can't equip weapons while having sex with someone!", null);
-								
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", "You can't equip weapons while having sex with someone!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip ([npc.Name])"), "You can't equip weapons while having sex with someone!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case TRADING:
 							if(index == 1) {
 								if(!weapon.getWeaponType().isAbleToBeSold()) {
 									return new Response("Sell (1)", "You cannot sell the " + weapon.getName() + "!", null);
-									
+
 								} else if (inventoryNPC.willBuy(weapon)) {
 									int sellPrice = weapon.getPrice(inventoryNPC.getBuyModifier());
 									return new Response("Sell (1) (" + UtilText.formatAsMoney(sellPrice, "span") + ")", "Sell the " + weapon.getName() + " for " + UtilText.formatAsMoney(sellPrice) + ".", INVENTORY_MENU){
@@ -2907,12 +2907,12 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Sell (1)", inventoryNPC.getName("The") + " doesn't want to buy this.", null);
 								}
-								
+
 							} else if(index == 2) {
 								if(Main.game.getPlayer().getWeaponCount(weapon) >= 5) {
 									if(!weapon.getWeaponType().isAbleToBeSold()) {
 										return new Response("Sell (5)", "You cannot sell the " + weapon.getName() + "!", null);
-										
+
 									} else if (inventoryNPC.willBuy(weapon)) {
 										int sellPrice = weapon.getPrice(inventoryNPC.getBuyModifier());
 										return new Response("Sell (5) (" + UtilText.formatAsMoney(sellPrice*5, "span") + ")", "Sell five of your " + weapon.getNamePlural() + " for " + UtilText.formatAsMoney(sellPrice*5) + ".", INVENTORY_MENU){
@@ -2924,15 +2924,15 @@ public class InventoryDialogue {
 									} else {
 										return new Response("Sell (5)", inventoryNPC.getName("The") + " doesn't want to buy these.", null);
 									}
-									
+
 								} else {
 									return new Response("Sell (5)", "You don't have five " + weapon.getNamePlural() + " to sell!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(!weapon.getWeaponType().isAbleToBeSold()) {
 									return new Response("Sell (All)", "You cannot sell the " + weapon.getName() + "!", null);
-									
+
 								} else if (inventoryNPC.willBuy(weapon)) {
 									int sellPrice = weapon.getPrice(inventoryNPC.getBuyModifier());
 									return new Response("Sell (All) (" + UtilText.formatAsMoney(sellPrice*Main.game.getPlayer().getWeaponCount(weapon), "span") + ")",
@@ -2945,7 +2945,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Sell (All)", inventoryNPC.getName("The") + " doesn't want to buy these.", null);
 								}
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 										|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
@@ -2970,11 +2970,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye/Reforge", "You'll need to find a dye-brush or reforge hammer if you want to alter this weapon's properties.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(weapon.getEnchantmentItemType(null)==null) {
 									return new Response("Enchant", "This weapon cannot be enchanted!", null);
-									
+
 								} else if(Main.game.isDebugMode()
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									return new Response("Enchant", "Enchant this weapon.", EnchantmentDialogue.ENCHANTMENT_MENU) {
@@ -2983,11 +2983,11 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(weapon);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant weapons yet...", null);
 								}
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "Equip the " + weapon.getName() + " as your main weapon.", INVENTORY_MENU){
 									@Override
@@ -2999,7 +2999,7 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-									
+
 							} else if(index == 7) {
 								if(weapon.getWeaponType().isTwoHanded()) {
 									return new Response("Equip Offhand (self)",
@@ -3018,27 +3018,27 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else if (index == 9) {
 								return getBuybackResponse();
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip Main ([npc.Name])"), UtilText.parse(inventoryNPC, "[npc.Name] doesn't want to use your weapons."), null);
-								
+
 							} else if(index == 12) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip Offhand ([npc.Name])"), UtilText.parse(inventoryNPC, "[npc.Name] doesn't want to use your weapons."), null);
-								
+
 							} else {
 								return null;
 							}
 					}
 				}
-				
+
 			// ****************************** ITEM DOES NOT BELONG TO PLAYER ******************************
-				
+
 			} else {
 				// ****************************** Interacting with the ground ******************************
 				if(inventoryNPC == null) {
@@ -3048,32 +3048,32 @@ public class InventoryDialogue {
 						case SEX:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't pick up weapons while masturbating.", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't pick up weapons while masturbating.", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't pick up weapons while masturbating.", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye weapons while masturbating.", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant weapons while masturbating.", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "You can't equip weapons while masturbating.", null);
-								
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", "You can't equip weapons while masturbating.", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
-							
+
 						default:
 							if(index == 1) {
 								if(inventoryFull) {
@@ -3085,7 +3085,7 @@ public class InventoryDialogue {
 										pickUpWeapons(Main.game.getPlayer(), weapon, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(inventoryFull) {
 									return new Response("Take (5)", "Your inventory is already full!", null);
@@ -3100,7 +3100,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Take (5)", "There aren't five " + weapon.getNamePlural() + " on the ground!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(inventoryFull) {
 									return new Response("Take (All)", "Your inventory is already full!", null);
@@ -3111,7 +3111,7 @@ public class InventoryDialogue {
 										pickUpWeapons(Main.game.getPlayer(), weapon, Main.game.getPlayerCell().getInventory().getWeaponCount(weapon));
 									}
 								};
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 										|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
@@ -3136,10 +3136,10 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye/Reforge", "You'll need to find a dye-brush or reforge hammer if you want to alter this weapon's properties.", null);
 								}
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant weapons on the ground!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "Equip the " + weapon.getName() + " as your main weapon.", INVENTORY_MENU){
 									@Override
@@ -3150,7 +3150,7 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-									
+
 							} else if(index == 7) {
 								if(weapon.getWeaponType().isTwoHanded()) {
 									return new Response("Equip Offhand (self)",
@@ -3168,15 +3168,15 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-									
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
 					}
-					
+
 				// ****************************** Interacting with an NPC ******************************
 				} else {
 					boolean inventoryFull = false;
@@ -3184,41 +3184,41 @@ public class InventoryDialogue {
 						case COMBAT:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't take someone weapons while fighting them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't take someone weapons while fighting them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't take someone weapons while fighting them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye someone's weapons while fighting them!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant someone else's weapons, especially not while fighting them!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "You can't use someone else's weapons while fighting them!", null);
-								
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", "You can't use someone else's weapons while fighting them!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response("Equip Main (opponent)", "You can't use make someone use a weapon while fighting them!", null);
-								
+
 							} else if(index == 12) {
 								return new Response("Equip Offhand (opponent)", "You can't use make someone use a weapon while fighting them!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case FULL_MANAGEMENT:  case CHARACTER_CREATION:
 							inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasWeapon(weapon) && weapon.getRarity()!=Rarity.QUEST;
-						
+
 							if(index == 1) {
 								if(inventoryFull) {
 									return new Response("Take (1)", "Your inventory is already full!", null);
@@ -3229,7 +3229,7 @@ public class InventoryDialogue {
 										transferWeapons(inventoryNPC, Main.game.getPlayer(), weapon, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(inventoryFull) {
 									return new Response("Take (5)", "Your inventory is already full!", null);
@@ -3244,7 +3244,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Take (5)", UtilText.parse(inventoryNPC, "[npc.Name] doesn't have five " + weapon.getNamePlural() + "!"), null);
 								}
-								
+
 							} else if(index == 3) {
 								if(inventoryFull) {
 									return new Response("Take (All)", "Your inventory is already full!", null);
@@ -3255,7 +3255,7 @@ public class InventoryDialogue {
 										transferWeapons(inventoryNPC, Main.game.getPlayer(), weapon, inventoryNPC.getWeaponCount(weapon));
 									}
 								};
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 										|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
@@ -3280,10 +3280,10 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye/Reforge", UtilText.parse(inventoryNPC, "You'll need to find a dye-brush or reforge hammer if you want to alter the properties of [npc.namePos] weapons."), null);
 								}
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant weapons owned by someone else!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "Equip the " + weapon.getName() + " as your main weapon.", INVENTORY_MENU){
 									@Override
@@ -3294,7 +3294,7 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else if(index == 7) {
 								if(weapon.getWeaponType().isTwoHanded()) {
 									return new Response("Equip Offhand (self)",
@@ -3312,10 +3312,10 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip Main ([npc.Name])"), UtilText.parse(inventoryNPC, "Get [npc.name] to equip the " + weapon.getName() + " as [npc.her] main weapon."), INVENTORY_MENU){
 									@Override
@@ -3326,7 +3326,7 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else if(index == 12) {
 								if(weapon.getWeaponType().isTwoHanded()) {
 									return new Response(UtilText.parse(inventoryNPC, "Equip Offhand ([npc.Name])"),
@@ -3344,49 +3344,49 @@ public class InventoryDialogue {
 										resetPostAction();
 									}
 								};
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case SEX:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't take someone's weapons while having sex with them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't take someone's weapons while having sex with them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't take someone's weapons while having sex with them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye someone's weapons while having sex with them!", null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant someone else's weapons, especially not while having sex with them!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", "You can't use someone else's weapons while having sex with them!", null);
-								
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", "You can't use someone else's weapons while having sex with them!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response("Equip Main (opponent)", "You can't use make someone use a weapon while having sex with them!", null);
-								
+
 							} else if(index == 12) {
 								return new Response("Equip Offhand (opponent)", "You can't use make someone use a weapon while having sex with them!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case TRADING:
 							inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasWeapon(weapon) && weapon.getRarity()!=Rarity.QUEST;
-							
+
 							if(index == 1) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():weapon.getPrice(inventoryNPC.getSellModifier());
 								if(inventoryFull) {
@@ -3401,7 +3401,7 @@ public class InventoryDialogue {
 										sellWeapons(inventoryNPC, Main.game.getPlayer(), weapon, 1, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():weapon.getPrice(inventoryNPC.getSellModifier());
 								if((buyback && Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<5)
@@ -3420,7 +3420,7 @@ public class InventoryDialogue {
 										sellWeapons(inventoryNPC, Main.game.getPlayer(), weapon, 5, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 3) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():weapon.getPrice(inventoryNPC.getSellModifier());
 								int count = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount():inventoryNPC.getWeaponCount(weapon);
@@ -3437,31 +3437,31 @@ public class InventoryDialogue {
 										sellWeapons(inventoryNPC, Main.game.getPlayer(), weapon, count, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you dye the weapon that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else if(index == 5) {
 								return new Response("Enchant", "You can't enchant someone else's weapon!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip Main (self)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you equip [npc.her] weapons without buying them first."), null);
-								
+
 							} else if(index == 7) {
 								return new Response("Equip Offhand (self)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you equip [npc.her] weapons without buying them first."), null);
-								
+
 							} else if (index == 9) {
 								return getBuybackResponse();
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip Main ([npc.Name])"), UtilText.parse(inventoryNPC, "[npc.Name] isn't going to equip the weapons that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else if(index == 12) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip Offhand ([npc.Name])"), UtilText.parse(inventoryNPC, "[npc.Name] isn't going to equip the weapons that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else {
 								return null;
 							}
@@ -3470,13 +3470,13 @@ public class InventoryDialogue {
 			}
 			return null;
 		}
-		
+
 		@Override
 		public DialogueNodeType getDialogueNodeType() {
 			return DialogueNodeType.INVENTORY;
 		}
 	};
-	
+
 	public static final DialogueNode CLOTHING_INVENTORY = new DialogueNode("Clothing", "", true) {
 
 		@Override
@@ -3484,14 +3484,14 @@ public class InventoryDialogue {
 			if(!Main.game.isInNewWorld()) {
 				return "Evening's Attire";
 			}
-			
+
 			if (Main.game.getDialogueFlags().values.contains(DialogueFlagValue.quickTrade) && !Main.game.isInSex() && !Main.game.isInCombat()) {
 				return "Inventory (Quick-Manage is <b style='color:" + Colour.GENERIC_GOOD.toWebHexString() + ";'>ON</b>)";
 			} else {
 				return "Inventory";
 			}
 		}
-		
+
 		@Override
 		public String getHeaderContent() {
 			return inventoryView();
@@ -3508,13 +3508,13 @@ public class InventoryDialogue {
 									? inventoryNPC.willBuy(clothing)
 											? "<p>"
 												+ inventoryNPC.getName("The") + " will buy it for " + UtilText.formatAsMoney(clothing.getPrice(inventoryNPC.getBuyModifier())) + "."
-											+ "</p>" 
+											+ "</p>"
 											: inventoryNPC.getName("The") + " doesn't want to buy this."
 										: "")
 							:(inventoryNPC != null && interactionType == InventoryInteraction.TRADING
 								? "<p>"
 										+ inventoryNPC.getName("The") + " will sell it for " + UtilText.formatAsMoney(clothing.getPrice(inventoryNPC.getSellModifier())) + "."
-									+ "</p>" 
+									+ "</p>"
 								: "")))
 					+(interactionType==InventoryInteraction.CHARACTER_CREATION?CharacterCreation.getCheckingClothingDescription():"");
 		}
@@ -3522,7 +3522,7 @@ public class InventoryDialogue {
 		public String getResponseTabTitle(int index) {
 			return getGeneralResponseTabTitle(index);
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -3531,10 +3531,10 @@ public class InventoryDialogue {
 			if(responseTab==0) {
 				return INVENTORY_MENU.getResponse(responseTab, index);
 			}
-			
+
 			// ****************************** ITEM BELONGS TO THE PLAYER ******************************
 			if(owner != null && owner.isPlayer()) {
-				
+
 				// ****************************** Interacting with the ground ******************************
 				if(inventoryNPC == null) {
 					boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
@@ -3544,16 +3544,16 @@ public class InventoryDialogue {
 							String dropTitle = owner.getLocationPlace().isItemsDisappear()?"Drop ":"Store";
 							if(index == 1) {
 								return new Response(dropTitle+"(1)", "You can't drop clothing while masturbating.", null);
-								
+
 							} else if(index == 2) {
 								return new Response(dropTitle+"(5)", "You can't drop clothing while masturbating.", null);
-								
+
 							} else if(index == 3) {
 								return new Response(dropTitle+"(All)", "You can't drop clothing while masturbating.", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye your clothing while masturbating.", null);
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -3594,7 +3594,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
 
@@ -3606,7 +3606,7 @@ public class InventoryDialogue {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(!clothing.getClothingType().isAbleToBeDropped()) {
 										return new Response("Drop (1)", "You cannot drop the " + clothing.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Drop (1)", "This area is full, so you can't drop your " + clothing.getName() + " here!", null);
 									} else {
@@ -3620,7 +3620,7 @@ public class InventoryDialogue {
 								} else {
 									if(!clothing.getClothingType().isAbleToBeDropped()) {
 										return new Response("Store (1)", "You cannot drop the " + clothing.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (1)", "This area is full, so you can't store your " + clothing.getName() + " here!", null);
 									} else {
@@ -3632,18 +3632,18 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 2) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(!clothing.getClothingType().isAbleToBeDropped()) {
 										return new Response("Drop (5)", "You cannot drop the " + clothing.getName() + "!", null);
-										
+
 									} else if(owner.getClothingCount(clothing) < 5) {
 										return new Response("Drop (5)", "You don't have five " + clothing.getNamePlural() + " to give!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Drop (5)", "This area is full, so you can't drop your " + clothing.getNamePlural() + " here!", null);
-										
+
 									} else {
 										return new Response("Drop (5)", "Drop five of your " + clothing.getNamePlural() + ".", INVENTORY_MENU){
 											@Override
@@ -3655,13 +3655,13 @@ public class InventoryDialogue {
 								} else {
 									if(!clothing.getClothingType().isAbleToBeDropped()) {
 										return new Response("Store (5)", "You cannot drop the " + clothing.getName() + "!", null);
-										
+
 									} else if(owner.getClothingCount(clothing) < 5) {
 										return new Response("Store (5)", "You don't have five " + clothing.getNamePlural() + " to give!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (5)", "This area is full, so you can't store your " + clothing.getNamePlural() + " here!", null);
-										
+
 									} else {
 										return new Response("Store (5)", "Store five of your " + clothing.getNamePlural() + " in this area.", INVENTORY_MENU){
 											@Override
@@ -3671,12 +3671,12 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if(index == 3) {
 								if(owner.getLocationPlace().isItemsDisappear()) {
 									if(!clothing.getClothingType().isAbleToBeDropped()) {
 										return new Response("Drop (All)", "You cannot drop the " + clothing.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Drop (All)", "This area is full, so you can't drop your " + clothing.getNamePlural() + " here!", null);
 									} else {
@@ -3690,7 +3690,7 @@ public class InventoryDialogue {
 								} else {
 									if(!clothing.getClothingType().isAbleToBeDropped()) {
 										return new Response("Store (All)", "You cannot drop the " + clothing.getName() + "!", null);
-										
+
 									} else if(areaFull) {
 										return new Response("Store (All)", "This area is full, so you can't store your " + clothing.getNamePlural() + " here!", null);
 									} else {
@@ -3702,7 +3702,7 @@ public class InventoryDialogue {
 										};
 									}
 								}
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 									boolean hasFullInventory = Main.game.getPlayer().isInventoryFull() && clothing.getRarity()!=Rarity.QUEST;
@@ -3725,7 +3725,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye", "You'll need to find a dye-brush if you want to dye your clothes.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									return getCondomSabotageResponse(clothing);
@@ -3734,7 +3734,7 @@ public class InventoryDialogue {
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									if(clothing.getEnchantmentItemType(null)==null) {
 										return new Response("Enchant", "This clothing cannot be enchanted!", null);
-										
+
 									} else if(!clothing.isEnchantmentKnown()) {
 										if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= IDENTIFICATION_ESSENCE_PRICE) {
 											return new Response("Identify ([style.italicsArcane("+IDENTIFICATION_ESSENCE_PRICE+" Essences)])",
@@ -3744,11 +3744,11 @@ public class InventoryDialogue {
 												@Override
 												public void effects() {
 													Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -IDENTIFICATION_ESSENCE_PRICE, false);
-													
+
 													String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
-													
+
 													clothing = AbstractClothing.enchantmentRemovedClothing;
-													
+
 													Main.game.getTextEndStringBuilder().append(
 															"<p>"
 																+ "You channel the power of "+Util.intToString(IDENTIFICATION_ESSENCE_PRICE)+" of your arcane essences into the "+clothing.getName()
@@ -3773,11 +3773,11 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(clothing);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant clothing yet...", null);
 								}
-								
+
 							} else if(index >= 6 && index <= 9 && index-6<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-6);
 								if(clothing.isCanBeEquipped(Main.game.getPlayer(), slot)) {
@@ -3790,31 +3790,31 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else {
 								return null;
 							}
 					}
-					
+
 				// ****************************** Interacting with an NPC ******************************
 				} else {
 					switch(interactionType) {
 						case COMBAT:
 							if(index == 1) {
 								return new Response("Give (1)", "You can't give someone clothing while fighting them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Give (5)", "You can't give someone clothing while fighting them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Give (All)", "You can't give someone clothing while fighting them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye your clothing while fighting someone!", null);
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -3823,29 +3823,29 @@ public class InventoryDialogue {
 									return new Response("Sabotage", "You can't sabotage the condom while fighting someone!", null);
 								}
 								return new Response("Enchant", "You can't enchant clothing while fighting someone!", null);
-								
+
 							} else if(index >= 6 && index <= 9 && index-6<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-6);
 								return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), "You cannot change your clothes while fighting someone!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
 
 							} else if(index >= 11 && index <= 14 && index-11<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-11);
 								return new Response("Equip: "+Util.capitaliseSentence(slot.getName())+" (opponent)", "You can't make your opponent equip clothing while fighting them!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case FULL_MANAGEMENT: case CHARACTER_CREATION:
 							boolean inventoryFull = inventoryNPC.isInventoryFull() && !inventoryNPC.hasClothing(clothing);
-							
+
 							if(index == 1) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Give (1)", "You cannot give away the " + clothing.getName() + "!", null);
-									
+
 								} else if(inventoryFull) {
 									return new Response("Give (1)", UtilText.parse(inventoryNPC, "[npc.NamePos] inventory is already full!"), null);
 								}
@@ -3855,11 +3855,11 @@ public class InventoryDialogue {
 										transferClothing(Main.game.getPlayer(), inventoryNPC, clothing, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Give (5)", "You cannot give away the " + clothing.getName() + "!", null);
-									
+
 								} else if(inventoryFull) {
 									return new Response("Give (5)", UtilText.parse(inventoryNPC, "[npc.NamePos] inventory is already full!"), null);
 								}
@@ -3873,11 +3873,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Give (5)", "You don't have five " + clothing.getNamePlural() + " to give!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Give (All)", "You cannot give away the " + clothing.getName() + "!", null);
-									
+
 								} else if(inventoryFull) {
 									return new Response("Give (All)", UtilText.parse(inventoryNPC, "[npc.NamePos] inventory is already full!"), null);
 								}
@@ -3887,7 +3887,7 @@ public class InventoryDialogue {
 										transferClothing(Main.game.getPlayer(), inventoryNPC, clothing, Main.game.getPlayer().getClothingCount(clothing));
 									}
 								};
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 									boolean hasFullInventory = Main.game.getPlayer().isInventoryFull();
@@ -3910,7 +3910,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye", "You'll need to find a dye-brush if you want to dye your clothes.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									return getCondomSabotageResponse(clothing);
@@ -3919,7 +3919,7 @@ public class InventoryDialogue {
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									if(clothing.getEnchantmentItemType(null)==null) {
 										return new Response("Enchant", "This clothing cannot be enchanted!", null);
-										
+
 									} else if(!clothing.isEnchantmentKnown()) {
 										if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= IDENTIFICATION_ESSENCE_PRICE) {
 											return new Response("Identify ([style.italicsArcane("+IDENTIFICATION_ESSENCE_PRICE+" Essences)])",
@@ -3931,9 +3931,9 @@ public class InventoryDialogue {
 													Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -IDENTIFICATION_ESSENCE_PRICE, false);
 
 													String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
-													
+
 													clothing = AbstractClothing.enchantmentRemovedClothing;
-													
+
 													Main.game.getTextEndStringBuilder().append(
 															"<p>"
 																+ "You channel the power of "+Util.intToString(IDENTIFICATION_ESSENCE_PRICE)+" of your arcane essences into the "+clothing.getName()
@@ -3958,11 +3958,11 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(clothing);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant clothing yet...", null);
 								}
-								
+
 							} else if(index >= 6 && index <= 9 && index-6<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-6);
 								if(clothing.isCanBeEquipped(Main.game.getPlayer(), slot)) {
@@ -3975,10 +3975,10 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-									
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index >= 11 && index <= 14 && index-11<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-11);
 //								if(!clothing.getClothingType().isAbleToBeDropped()) {
@@ -4004,7 +4004,7 @@ public class InventoryDialogue {
 											public DialogueNode getNextDialogue() {
 												if(inventoryNPC.getEnslavementDialogue(clothing)!=null) {
 													return inventoryNPC.getEnslavementDialogue(clothing);
-													
+
 												} else {
 													return INVENTORY_MENU;
 												}
@@ -4019,7 +4019,7 @@ public class InventoryDialogue {
 												}
 											}
 										};
-										
+
 									} else {
 										return new Response(
 												UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"),
@@ -4031,31 +4031,31 @@ public class InventoryDialogue {
 											}
 										};
 									}
-									
+
 								} else {
 									return new Response(
 											UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"),
 											clothing.getCannotBeEquippedText(inventoryNPC, slot),
 											null);
 								}
-							
+
 							} else {
 								return null;
 							}
-							
+
 						case SEX:
 							if(index == 1) {
 								return new Response("Give (1)", "You can't give someone clothing while having sex with them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Give (5)", "You can't give someone clothing while having sex with them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Give (All)", "You can't give someone clothing while having sex with them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye your clothing while having sex with someone!", null);
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4096,7 +4096,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
 
@@ -4154,16 +4154,16 @@ public class InventoryDialogue {
 								} else {
 									return new Response(UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"), clothing.getCannotBeEquippedText(inventoryNPC, slot), null);
 								}
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case TRADING:
 							if(index == 1) {
 								if(!clothing.getClothingType().isAbleToBeSold()) {
 									return new Response("Sell (1)", "You cannot sell the " + clothing.getName() + "!", null);
-									
+
 								} else if (inventoryNPC.willBuy(clothing)) {
 									int sellPrice = clothing.getPrice(inventoryNPC.getBuyModifier());
 									return new Response("Sell (1) (" + UtilText.formatAsMoney(sellPrice, "span") + ")", "Sell the " + clothing.getName() + " for " + UtilText.formatAsMoney(sellPrice) + ".", INVENTORY_MENU){
@@ -4175,11 +4175,11 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Sell (1)", inventoryNPC.getName("The") + " doesn't want to buy this.", null);
 								}
-								
+
 							} else if(index == 2) {
 								if(!clothing.getClothingType().isAbleToBeSold()) {
 									return new Response("Sell (5)", "You cannot sell the " + clothing.getName() + "!", null);
-									
+
 								} else if(Main.game.getPlayer().getClothingCount(clothing) >= 5) {
 									if (inventoryNPC.willBuy(clothing)) {
 										int sellPrice = clothing.getPrice(inventoryNPC.getBuyModifier());
@@ -4192,15 +4192,15 @@ public class InventoryDialogue {
 									} else {
 										return new Response("Sell (5)", inventoryNPC.getName("The") + " doesn't want to buy these.", null);
 									}
-									
+
 								} else {
 									return new Response("Sell (5)", "You don't have five " + clothing.getNamePlural() + " to sell!", null);
 								}
-								
+
 							} else if(index == 3) {
 								if(!clothing.getClothingType().isAbleToBeSold()) {
 									return new Response("Sell (All)", "You cannot sell the " + clothing.getName() + "!", null);
-									
+
 								} else if (inventoryNPC.willBuy(clothing)) {
 									int sellPrice = clothing.getPrice(inventoryNPC.getBuyModifier());
 									return new Response("Sell (All) (" + UtilText.formatAsMoney(sellPrice*Main.game.getPlayer().getClothingCount(clothing), "span") + ")",
@@ -4213,14 +4213,14 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Sell (All)", inventoryNPC.getName("The") + " doesn't want to buy these.", null);
 								}
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 									boolean hasFullInventory = Main.game.getPlayer().isInventoryFull() && clothing.getRarity()!=Rarity.QUEST;
 									boolean isDyeingStackItem = Main.game.getPlayer().getAllClothingInInventory().get(clothing) > 1;
 									boolean canDye = !(isDyeingStackItem && hasFullInventory);
 									if (canDye) {
-										return new Response("Dye", 
+										return new Response("Dye",
 												Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 													?"Use your proficiency with [style.colourEarth(Earth spells)] to dye this item."
 													:"Use a dye-brush to dye this item of clothing.",
@@ -4236,7 +4236,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye", "You'll need to find a dye-brush if you want to dye your clothes.", null);
 								}
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									return getCondomSabotageResponse(clothing);
@@ -4245,7 +4245,7 @@ public class InventoryDialogue {
 										|| (Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY))) {
 									if(clothing.getEnchantmentItemType(null)==null) {
 										return new Response("Enchant", "This clothing cannot be enchanted!", null);
-										
+
 									} else if(!clothing.isEnchantmentKnown()) {
 										if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= IDENTIFICATION_ESSENCE_PRICE) {
 											return new Response("Identify ([style.italicsArcane("+IDENTIFICATION_ESSENCE_PRICE+" Essences)])",
@@ -4257,9 +4257,9 @@ public class InventoryDialogue {
 													Main.game.getPlayer().incrementEssenceCount(TFEssence.ARCANE, -IDENTIFICATION_ESSENCE_PRICE, false);
 
 													String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
-													
+
 													clothing = AbstractClothing.enchantmentRemovedClothing;
-													
+
 													Main.game.getTextEndStringBuilder().append(
 															"<p>"
 																+ "You channel the power of "+Util.intToString(IDENTIFICATION_ESSENCE_PRICE)+" of your arcane essences into the "+clothing.getName()
@@ -4284,7 +4284,7 @@ public class InventoryDialogue {
 											return EnchantmentDialogue.getEnchantmentMenu(clothing);
 										}
 									};
-									
+
 								} else {
 									return new Response("Enchant", "You have not discovered how to enchant clothing yet...", null);
 								}
@@ -4301,10 +4301,10 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-								
+
 							} else if (index == 9) {
 								return getBuybackResponse();
-								
+
 							}
 //							else if (index == 10) {
 //								return getQuickTradeResponse();
@@ -4313,15 +4313,15 @@ public class InventoryDialogue {
 							else if(index >= 11 && index <= 14 && index-11<clothing.getClothingType().getEquipSlots().size()) {
 								InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-11);
 								return new Response(UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"), UtilText.parse(inventoryNPC, "[npc.Name] doesn't want to wear your clothing."), null);
-								
+
 							} else if (index == 10 && !clothing.isEnchantmentKnown()) {
 								if(!inventoryNPC.willBuy(clothing)) {
 									return new Response("Identify", inventoryNPC.getName("The") + " can't identify clothing!", null);
-									
+
 								} else if(Main.game.getPlayer().getMoney() < IDENTIFICATION_PRICE){
 									// don't format as money because we don't want to highlight non-selectable choices
 									return new Response("Identify (" + UtilText.formatAsMoneyUncoloured(IDENTIFICATION_PRICE, "span") + ")", "You don't have enough money!", null);
-									
+
 								}else {
 									return new Response("Identify (" + UtilText.formatAsMoney(IDENTIFICATION_PRICE, "span") + ")",
 												"Have the " + clothing.getName() + " identified for " + UtilText.formatAsMoney(IDENTIFICATION_PRICE, "span") + ".", CLOTHING_INVENTORY){
@@ -4330,9 +4330,9 @@ public class InventoryDialogue {
 											Main.game.getPlayer().incrementMoney(-IDENTIFICATION_PRICE);
 
 											String enchantmentRemovedString = clothing.setEnchantmentKnown(owner, true);
-											
+
 											clothing = AbstractClothing.enchantmentRemovedClothing;
-											
+
 											Main.game.getTextEndStringBuilder().append(
 													"<p style='text-align:center;'>"
 														+ UtilText.parse(inventoryNPC,
@@ -4340,7 +4340,7 @@ public class InventoryDialogue {
 																		+ " who promptly feeds several bottles of arcane essence into a specialist identification device, before using it to reveal the enchantment on your "+clothing.getName()+".")
 													+ "</p>"
 													+enchantmentRemovedString);
-											
+
 											RenderingEngine.setPage(Main.game.getPlayer(), clothing);
 										}
 									};
@@ -4350,9 +4350,9 @@ public class InventoryDialogue {
 							}
 					}
 				}
-				
+
 			// ****************************** ITEM DOES NOT BELONG TO PLAYER ******************************
-				
+
 			} else {
 				// ****************************** Interacting with the ground ******************************
 				if(inventoryNPC == null) {
@@ -4367,7 +4367,7 @@ public class InventoryDialogue {
 										|| Main.game.getPlayer().isCoverableAreaVisible(CoverableArea.VAGINA)
 										|| (Main.game.getPlayer().getClothingInSlot(InventorySlot.FOOT)==null && Main.game.getPlayer().getLegType().equals(LegType.HUMAN))) {
 									return new Response("To the stage", "You need to be wearing clothing that covers your body, as well as a pair of shoes.", null);
-									
+
 								} else {
 									return new Response("To the stage", "You're ready to approach the stage now.", CharacterCreation.CHOOSE_BACKGROUND) {
 										@Override
@@ -4376,7 +4376,7 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 4) {
 								if(Main.game.getPlayer().getClothingCurrentlyEquipped().isEmpty()){
 									return new Response("Unequip all", "You're currently naked, there's nothing to be unequipped.", null);
@@ -4389,7 +4389,7 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else if(index == 5) {
 								return new Response("Change colour", "Change the colour of this item of clothing.", DYE_CLOTHING_CHARACTER_CREATION) {
 									@Override
@@ -4406,28 +4406,28 @@ public class InventoryDialogue {
 											equipClothingFromGround(Main.game.getPlayer(), slot, Main.game.getPlayer(), clothing);
 										}
 									};
-									
+
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-							
+
 							} else {
 								return null;
 							}
-					
+
 					case SEX:
 						if(index == 1) {
 							return new Response("Take (1)", "You can't pick up clothing while masturbating.", null);
-							
+
 						} else if(index == 2) {
 							return new Response("Take (5)", "You can't pick up clothing while masturbating.", null);
-							
+
 						} else if(index == 3) {
 							return new Response("Take (All)", "You can't pick up clothing while masturbating.", null);
-							
+
 						} else if(index == 4) {
 							return new Response("Dye", "You can't dye your clothing while masturbating.", null);
-							
+
 						} else if(index == 5) {
 							if(clothing.isCondom()) {
 								if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4468,14 +4468,14 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 							}
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
 
 						} else {
 							return null;
 						}
-					
+
 					default:
 						if(index == 1) {
 							if(inventoryFull) {
@@ -4487,7 +4487,7 @@ public class InventoryDialogue {
 									pickUpClothing(Main.game.getPlayer(), clothing, 1);
 								}
 							};
-							
+
 						} else if(index == 2) {
 							if(inventoryFull) {
 								return new Response("Take (5)", "Your inventory is already full!", null);
@@ -4502,7 +4502,7 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Take (5)", "There aren't five " + clothing.getNamePlural() + " on the ground!", null);
 							}
-							
+
 						} else if(index == 3) {
 							if(inventoryFull) {
 								return new Response("Take (All)", "Your inventory is already full!", null);
@@ -4513,14 +4513,14 @@ public class InventoryDialogue {
 									pickUpClothing(Main.game.getPlayer(), clothing, Main.game.getPlayerCell().getInventory().getClothingCount(clothing));
 								}
 							};
-							
+
 						} else if (index==4) {
 							if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 								boolean hasFullInventory = Main.game.getPlayerCell().getInventory().isInventoryFull();
 								boolean isDyeingStackItem = Main.game.getPlayerCell().getInventory().getAllClothingInInventory().get(clothing) > 1;
 								boolean canDye = !(isDyeingStackItem && hasFullInventory);
 								if (canDye) {
-									return new Response("Dye", 
+									return new Response("Dye",
 											Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"Use your proficiency with [style.colourEarth(Earth spells)] to dye this item."
 												:"Use a dye-brush to dye this item of clothing.",
@@ -4536,7 +4536,7 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Dye", "You'll need to find a dye-brush if you want to dye your clothes.", null);
 							}
-							
+
 						} else if(index == 5) {
 							if(clothing.isCondom()) {
 								if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4545,7 +4545,7 @@ public class InventoryDialogue {
 								return new Response("Sabotage", "You can't sabotage condoms on the ground!", null);
 							}
 							return new Response("Enchant", "You can't enchant clothing on the ground!", null);
-	
+
 						} else if(index >= 6 && index <= 9 && index-6<clothing.getClothingType().getEquipSlots().size()) {
 							InventorySlot slot = clothing.getClothingType().getEquipSlots().get(index-6);
 							if(clothing.isCanBeEquipped(Main.game.getPlayer(), slot)) {
@@ -4558,15 +4558,15 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 							}
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
 					}
-					
+
 				// ****************************** Interacting with an NPC ******************************
 				} else {
 					boolean inventoryFull = false;
@@ -4574,16 +4574,16 @@ public class InventoryDialogue {
 						case COMBAT:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't take someone clothing while fighting them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't take someone clothing while fighting them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't take someone clothing while fighting them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye someone's clothing while fighting them!", null);
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4592,23 +4592,23 @@ public class InventoryDialogue {
 									return new Response("Sabotage", "You can't sabotage someone else's condom, especially not while fighting them!", null);
 								}
 								return new Response("Enchant", "You can't enchant someone else's clothing, especially not while fighting them!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip (self)", "You can't use someone else's clothing while fighting them!", null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response("Equip (opponent)", "You can't make someone wear clothing while fighting them!", null);
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case FULL_MANAGEMENT: case CHARACTER_CREATION:
 							inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasClothing(clothing) && clothing.getRarity()!=Rarity.QUEST;
-						
+
 							if(index == 1) {
 								if(inventoryFull) {
 									return new Response("Take (1)", "Your inventory is already full!", null);
@@ -4619,7 +4619,7 @@ public class InventoryDialogue {
 										transferClothing(inventoryNPC, Main.game.getPlayer(), clothing, 1);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								if(inventoryFull) {
 									return new Response("Take (5)", "Your inventory is already full!", null);
@@ -4634,7 +4634,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Take (5)", UtilText.parse(inventoryNPC, "[npc.Name] doesn't have five " + clothing.getNamePlural() + "!"), null);
 								}
-								
+
 							} else if(index == 3) {
 								if(inventoryFull) {
 									return new Response("Take (All)", "Your inventory is already full!", null);
@@ -4645,14 +4645,14 @@ public class InventoryDialogue {
 										transferClothing(inventoryNPC, Main.game.getPlayer(), clothing, inventoryNPC.getClothingCount(clothing));
 									}
 								};
-								
+
 							} else if (index==4) {
 								if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 									boolean hasFullInventory = inventoryNPC.isInventoryFull();
 									boolean isDyeingStackItem = clothing!=null && inventoryNPC.getAllClothingInInventory().get(clothing) > 1;
 									boolean canDye = !(isDyeingStackItem && hasFullInventory);
 									if (canDye) {
-										return new Response("Dye", 
+										return new Response("Dye",
 												Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 													?"Use your proficiency with [style.colourEarth(Earth spells)] to dye this item."
 													:"Use a dye-brush to dye this item of clothing.",
@@ -4668,7 +4668,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Dye", UtilText.parse(inventoryNPC, "You'll need to find another dye-brush if you want to dye [npc.namePos] clothes."), null);
 								}
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4690,7 +4690,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
 
@@ -4713,7 +4713,7 @@ public class InventoryDialogue {
 											public DialogueNode getNextDialogue() {
 												if(inventoryNPC.getEnslavementDialogue(clothing)!=null) {//inventoryNPC.isAbleToBeEnslaved() && !inventoryNPC.isSlave()) {
 													return inventoryNPC.getEnslavementDialogue(clothing);
-													
+
 												} else {
 													return INVENTORY_MENU;
 												}
@@ -4731,7 +4731,7 @@ public class InventoryDialogue {
 												}
 											}
 										};
-										
+
 									} else {
 										return new Response(
 												UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"),
@@ -4749,24 +4749,24 @@ public class InventoryDialogue {
 											clothing.getCannotBeEquippedText(inventoryNPC, slot),
 											null);
 								}
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case SEX:
 							if(index == 1) {
 								return new Response("Take (1)", "You can't take someone's clothing while having sex with them!", null);
-								
+
 							} else if(index == 2) {
 								return new Response("Take (5)", "You can't take someone's clothing while having sex with them!", null);
-								
+
 							} else if(index == 3) {
 								return new Response("Take (All)", "You can't take someone's clothing while having sex with them!", null);
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", "You can't dye someone's clothing while having sex with them!", null);
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4807,7 +4807,7 @@ public class InventoryDialogue {
 								} else {
 									return new Response("Equip: "+Util.capitaliseSentence(slot.getName()), clothing.getCannotBeEquippedText(Main.game.getPlayer(), slot), null);
 								}
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
 
@@ -4830,7 +4830,7 @@ public class InventoryDialogue {
 										}
 										if(!Main.sex.isClothingEquipAvailable(inventoryNPC, slot)) {
 											return new Response(
-													UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"), 
+													UtilText.parse(inventoryNPC, "Equip: "+Util.capitaliseSentence(slot.getName())+" ([npc.Name])"),
 													"This slot is involved with an ongoing sex action, so you cannot equip clothing into it!",
 													null);
 										}
@@ -4867,14 +4867,14 @@ public class InventoryDialogue {
 											clothing.getCannotBeEquippedText(inventoryNPC, slot),
 											null);
 								}
-								
+
 							} else {
 								return null;
 							}
-							
+
 						case TRADING:
 							inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasClothing(clothing) && clothing.getRarity()!=Rarity.QUEST;
-							
+
 							if(index == 1) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():clothing.getPrice(inventoryNPC.getSellModifier());
 								if(inventoryFull) {
@@ -4889,7 +4889,7 @@ public class InventoryDialogue {
 										sellClothing(inventoryNPC, Main.game.getPlayer(), clothing, 1, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 2) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():clothing.getPrice(inventoryNPC.getSellModifier());
 								if((buyback && Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<5)
@@ -4908,7 +4908,7 @@ public class InventoryDialogue {
 										sellClothing(inventoryNPC, Main.game.getPlayer(), clothing, 5, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 3) {
 								int sellPrice = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getPrice():clothing.getPrice(inventoryNPC.getSellModifier());
 								int count = buyback?Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount():inventoryNPC.getClothingCount(clothing);
@@ -4925,10 +4925,10 @@ public class InventoryDialogue {
 										sellClothing(inventoryNPC, Main.game.getPlayer(), clothing, count, sellPrice);
 									}
 								};
-								
+
 							} else if(index == 4) {
 								return new Response("Dye", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you dye the clothing that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -4937,19 +4937,19 @@ public class InventoryDialogue {
 									return new Response("Sabotage", "You can't sabotage someone else's condom!", null);
 								}
 								return new Response("Enchant", "You can't enchant someone else's clothing!", null);
-								
+
 							} else if(index == 6) {
 								return new Response("Equip (self)", UtilText.parse(inventoryNPC, "[npc.Name] isn't going to let you use [npc.her] clothing without buying them first."), null);
-								
+
 							} else if (index == 9) {
 								return getBuybackResponse();
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if(index == 11) {
 								return new Response(UtilText.parse(inventoryNPC, "Equip ([npc.Name])"), UtilText.parse(inventoryNPC, "[npc.Name] isn't going to use the clothing that [npc.sheIs] trying to sell!"), null);
-								
+
 							} else {
 								return null;
 							}
@@ -4957,7 +4957,7 @@ public class InventoryDialogue {
 				}
 			}
 			return null;
-			
+
 		}
 
 		@Override
@@ -4965,9 +4965,9 @@ public class InventoryDialogue {
 			return DialogueNodeType.INVENTORY;
 		}
 	};
-	
+
 	public static final DialogueNode WEAPON_EQUIPPED = new DialogueNode("Weapon equipped", "", true) {
-		
+
 
 		@Override
 		public String getLabel() {
@@ -4977,7 +4977,7 @@ public class InventoryDialogue {
 				return "Inventory";
 			}
 		}
-		
+
 		@Override
 		public String getHeaderContent() {
 			return inventoryView();
@@ -4993,7 +4993,7 @@ public class InventoryDialogue {
 		public String getResponseTabTitle(int index) {
 			return getGeneralResponseTabTitle(index);
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -5002,7 +5002,7 @@ public class InventoryDialogue {
 			if(responseTab==0) {
 				return INVENTORY_MENU.getResponse(responseTab, index);
 			}
-			
+
 			// ****************************** ITEM BELONGS TO THE PLAYER ******************************
 			if(owner != null && owner.isPlayer()) {
 				switch(interactionType) {
@@ -5010,34 +5010,34 @@ public class InventoryDialogue {
 						if (index == 1) {
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								return new Response("Drop", "You can't change weapons while fighting someone!", null);
-								
+
 							} else {
 								return new Response("Store", "You can't change weapons while fighting someone!", null);
 							}
-							
+
 						} else if (index==4) {
 							return new Response("Dye/Reforge", "You can't alter the properties of "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" weapons in combat!", null);
-							
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant equipped weapons!", null);
-							
+
 						} if(index == 6) {
 							return new Response("Unequip", "You can't change weapons while fighting someone!", null);
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case FULL_MANAGEMENT: case TRADING: case CHARACTER_CREATION:
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasWeapon(weapon);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Drop", "You cannot drop the " + weapon.getName() + "!", null);
-									
+
 								} else if(areaFull) {
 									return new Response("Drop", "This area is full, so you can't drop your " + weapon.getName() + " here!", null);
 								} else {
@@ -5052,11 +5052,11 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Store", "You cannot drop the " + weapon.getName() + "!", null);
-									
+
 								} else if(areaFull) {
 									return new Response("Store", "This area is full, so you can't store your " + weapon.getName() + " here!", null);
 								} else {
@@ -5072,12 +5072,12 @@ public class InventoryDialogue {
 									};
 								}
 							}
-							
+
 						} else if (index==4) {
 							if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 									|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
 									|| Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-								return new Response("Dye/Reforge", 
+								return new Response("Dye/Reforge",
 										Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 											?"Use your proficiency with [style.colourEarth(Earth spells)] to alter this weapon's properties."
 											:"Use a dye-brush or reforge hammer to alter this weapon's properties.",
@@ -5090,10 +5090,10 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Dye", "You need a dye-brush or reforge hammer in order to alter this weapon's properties.", null);
 							}
-							
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant equipped weapons!", null);
-							
+
 						} else if(index == 6) {
 							return new Response("Unequip", "Unequip the " + weapon.getName() + ".", INVENTORY_MENU){
 								@Override
@@ -5105,21 +5105,21 @@ public class InventoryDialogue {
 									resetPostAction();
 								}
 							};
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case SEX:
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasWeapon(weapon);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Drop", "You cannot drop the " + weapon.getName() + "!", null);
-									
+
 								} else if(areaFull) {
 									return new Response("Drop", "This area is full, so you can't drop your " + weapon.getName() + " here!", null);
 								} else {
@@ -5137,11 +5137,11 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Store", "You cannot drop the " + weapon.getName() + "!", null);
-									
+
 								} else if(areaFull) {
 									return new Response("Store", "This area is full, so you can't store your " + weapon.getName() + " here!", null);
 								} else {
@@ -5160,13 +5160,13 @@ public class InventoryDialogue {
 									};
 								}
 							}
-							
+
 						} else if (index==4) {
 							return new Response("Dye/Reforge", "You can't alter the properties of "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" weapons in sex!", null);
-							
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant equipped weapons!", null);
-							
+
 						} else if(index == 6) {
 							return new Response("Unequip", "Unequip the " + weapon.getName() + ".", Main.sex.SEX_DIALOGUE){
 								@Override
@@ -5181,51 +5181,51 @@ public class InventoryDialogue {
 									Main.sex.setSexStarted(true);
 								}
 							};
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
 				}
-				
+
 			// ****************************** ITEM DOES NOT BELONG TO PLAYER ******************************
-				
+
 			} else {
 				switch(interactionType) {
 					case COMBAT:
 						if(index == 1) {
 							return new Response("Drop", "You can't make someone drop their weapon while fighting them!", null);
-							
+
 						} else if(index == 2) {
 							return new Response("Take", "You can't take someone's weapon while fighting them!", null);
-							
+
 						} else if (index==4) {
 							return new Response("Dye/Reforge", "You can't alter the properties of someone else's equipped weapons while you're fighting them!", null);
-							
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant someone else's equipped weapon, especially not while fighting them!", null);
-							
+
 						} else if (index == 6) {
 							return new Response("Unequip", "You can't unequip someone's weapon while fighting them!", null);
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case FULL_MANAGEMENT:  case CHARACTER_CREATION:
 						boolean inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasClothing(clothing) && clothing.getRarity()!=Rarity.QUEST;
-						
+
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasWeapon(weapon);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Drop", UtilText.parse(inventoryNPC, "[npc.Name] cannot drop [npc.her] " + weapon.getName() + "!"), null);
-									
+
 								} else if(areaFull) {
 									return new Response("Drop", UtilText.parse(inventoryNPC, "This area is full, so [npc.name] can't drop [npc.her] " + weapon.getName() + " here!"), null);
 								} else {
@@ -5240,11 +5240,11 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								if(!weapon.getWeaponType().isAbleToBeDropped()) {
 									return new Response("Drop", UtilText.parse(inventoryNPC, "[npc.Name] cannot drop [npc.her] " + weapon.getName() + "!"), null);
-									
+
 								} else if(areaFull) {
 									return new Response("Store", UtilText.parse(inventoryNPC, "This area is full, so [npc.name] can't store [npc.her] " + weapon.getName() + " here!"), null);
 								} else {
@@ -5260,11 +5260,11 @@ public class InventoryDialogue {
 									};
 								}
 							}
-							
+
 						} else if (index == 2) {
 							if(inventoryFull) {
 								return new Response("Take", "Your inventory is full, so you can't take this!", null);
-								
+
 							} else {
 								return new Response("Take",
 										UtilText.parse(inventoryNPC, "Take [npc.namePos] " + weapon.getName() + " and add it to your inventory."),
@@ -5280,12 +5280,12 @@ public class InventoryDialogue {
 									}
 								};
 							}
-							
+
 						} else if (index==4) {
 							if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 									|| Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER)
 									|| Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-								return new Response("Dye/Reforge", 
+								return new Response("Dye/Reforge",
 										Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 											?"Use your proficiency with [style.colourEarth(Earth spells)] to alter this weapon's properties."
 											:"Use a dye-brush or reforge hammer to alter this weapon's properties.",
@@ -5298,10 +5298,10 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Dye", UtilText.parse(inventoryNPC, "You'll need to find a dye-brush or reforge hammer if you want to alter the properties of [npc.namePos] weapons."), null);
 							}
-							
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant equipped weapons!", null);
-							
+
 						} else if(index == 6) {
 							if(!weapon.getWeaponType().isAbleToBeDropped()) {
 								return new Response("Unequip", UtilText.parse(inventoryNPC, "As it's a unique weapon, the " + weapon.getName() + " cannot be unequipped into [npc.namePos] inventory."), null);
@@ -5316,61 +5316,61 @@ public class InventoryDialogue {
 									resetPostAction();
 								}
 							};
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case SEX:
 						if(index == 1) {
 							return new Response("Drop", "You can't unequip someone's weapon while having sex with them!", null);
-							
+
 						} else if (index == 2) {
 							return new Response("Take", "You can't take someone's weapon while having sex with them!", null);
-							
+
 						} else if (index==4) {
 							return new Response("Dye/Reforge", UtilText.parse(inventoryNPC, "You can't alter the properties of [npc.namePos] weapons in sex!"), null);
-						
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant equipped weapons!", null);
-							
+
 						} else if(index == 6) {
 							return new Response("Unequip", "You can't unequip someone's weapon while having sex with them!", null);
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case TRADING:
 						if(index == 1) {
 							return new Response("Drop", "You can't make someone drop their weapon!", null);
-							
+
 						} else if (index == 2) {
 							return new Response("Take", "You can't take someone else's weapon!", null);
-							
+
 						} else if (index==4) {
 							return new Response("Dye/Reforge", UtilText.parse(inventoryNPC, "You can't alter the properties of [npc.namePos] weapons!"), null);
-							
+
 						} else if(index == 5) {
 							return new Response("Enchant", "You can't enchant someone else's equipped weapon!", null);
-							
+
 						} else if(index == 6) {
 							return new Response("Unequip", "You can't unequip someone else's weapon!", null);
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else {
 							return null;
 						}
 					}
-				
+
 				}
 				return null;
 		}
@@ -5387,14 +5387,14 @@ public class InventoryDialogue {
 			if(!Main.game.isInNewWorld()) {
 				return "Evening's Attire";
 			}
-			
+
 			if (Main.game.getDialogueFlags().values.contains(DialogueFlagValue.quickTrade) && !Main.game.isInSex() && !Main.game.isInCombat()) {
 				return "Inventory (Quick-Manage is <b style='color:" + Colour.GENERIC_GOOD.toWebHexString() + ";'>ON</b>)";
 			} else {
 				return "Inventory";
 			}
 		}
-		
+
 		@Override
 		public String getHeaderContent() {
 			return inventoryView();
@@ -5414,7 +5414,7 @@ public class InventoryDialogue {
 		public String getResponseTabTitle(int index) {
 			return getGeneralResponseTabTitle(index);
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -5423,7 +5423,7 @@ public class InventoryDialogue {
 			if(responseTab==0) {
 				return INVENTORY_MENU.getResponse(responseTab, index);
 			}
-			
+
 			// ****************************** ITEM BELONGS TO THE PLAYER ******************************
 			if(owner != null && owner.isPlayer()) {
 				InventorySlot slotEquippedTo = clothing.getSlotEquippedTo();
@@ -5432,19 +5432,19 @@ public class InventoryDialogue {
 						if (index == 1) {
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								return new Response("Drop", "You cannot drop the " + clothing.getName() + " while fighting someone!", null);
-								
+
 							} else {
 								return new Response("Store", "You cannot drop the " + clothing.getName() + " while fighting someone!", null);
 							}
-							
+
 						} else if (index==4) {
 							return new Response("Dye", "You can't dye "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" clothes in combat!", null);
-							
+
 						} else if(index == 5) {
 							if(clothing.isSealed()) {
 								if(getJinxRemovalBlockedResponse()==null) {
 									return new Response("Unjinx (<i>"+clothing.getJinxRemovalCost()+" Essences</i>)", "You can't unjinx clothing in combat!", null);
-									
+
 								} else {
 									return getJinxRemovalBlockedResponse();
 								}
@@ -5457,31 +5457,31 @@ public class InventoryDialogue {
 								}
 								return new Response("Enchant", "You can't enchant equipped clothing!", null);
 							}
-							
+
 						} else if(index == 6 && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 							return new Response("Unequip", "You can't unequip the " + clothing.getName() + " during combat!", null);
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).size()){
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 										"You can't "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription()
 										+ " the " + clothing.getName() + " during combat!", null);
-								
-							
+
+
 						} else {
-							
+
 							return null;
 						}
-						
+
 					case FULL_MANAGEMENT: case TRADING:
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Drop", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Drop", "This area is full, so you can't drop "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " here!", null);
 								} else {
@@ -5496,11 +5496,11 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Store", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Store", "This area is full, so you can't store "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " here!", null);
 								} else {
@@ -5516,10 +5516,10 @@ public class InventoryDialogue {
 									};
 								}
 							}
-							
+
 						} else if (index==4) {
 							if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-								return new Response("Dye", 
+								return new Response("Dye",
 										Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 											?"Use your proficiency with [style.colourEarth(Earth spells)] to dye this item."
 											:"Use a dye-brush to dye this item of clothing.",
@@ -5532,7 +5532,7 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Dye", "You need a dye-brush in order to dye this item of clothing.", null);
 							}
-							
+
 						} else if(index == 5) {
 							if(clothing.isSealed()) {
 								if(getJinxRemovalBlockedResponse()==null) {
@@ -5555,7 +5555,7 @@ public class InventoryDialogue {
 									} else {
 										return new Response("Unjinx (<i>"+clothing.getJinxRemovalCost()+" Essences</i>)", "You need at least "+clothing.getJinxRemovalCost()+" arcane essences in order to unjinx this piece of clothing!", null);
 									}
-									
+
 								} else {
 									return getJinxRemovalBlockedResponse();
 								}
@@ -5568,7 +5568,7 @@ public class InventoryDialogue {
 								}
 								return new Response("Enchant", "You can't enchant equipped clothing!", null);
 							}
-							
+
 						} else if(index == 6 && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 							return new Response("Unequip", "Unequip the " + clothing.getName() + ".", INVENTORY_MENU){
 								@Override
@@ -5576,12 +5576,12 @@ public class InventoryDialogue {
 									Main.game.getTextEndStringBuilder().append("<p style='text-align:center;'>" + unequipClothingToInventory(Main.game.getPlayer(), clothing) + "</p>");
 								}
 							};
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).size()){
-							
+
 							if (clothing.getDisplacedList().contains(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11))) {
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11).getOppositeDescription()),
 										Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11).getOppositeDescription()) + " the " + clothing.getName() + ". "
@@ -5613,11 +5613,11 @@ public class InventoryDialogue {
 									}
 								};
 							}
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case CHARACTER_CREATION:
 						if (index == 1) {
 							if(Main.game.getPlayer().isCoverableAreaVisible(CoverableArea.NIPPLES)
@@ -5626,7 +5626,7 @@ public class InventoryDialogue {
 									|| Main.game.getPlayer().isCoverableAreaVisible(CoverableArea.VAGINA)
 									|| (Main.game.getPlayer().getClothingInSlot(InventorySlot.FOOT)==null && Main.game.getPlayer().getLegType().equals(LegType.HUMAN))) {
 								return new Response("To the stage", "You need to be wearing clothing that covers your body, as well as a pair of shoes.", null);
-								
+
 							} else {
 								return new Response("To the stage", "You're ready to approach the stage now.", CharacterCreation.CHOOSE_BACKGROUND) {
 									@Override
@@ -5635,7 +5635,7 @@ public class InventoryDialogue {
 									}
 								};
 							}
-							
+
 						} else if(index == 4){
 							if(Main.game.getPlayer().getClothingCurrentlyEquipped().isEmpty()){
 								return new Response("Unequip all", "You're currently naked, there's nothing to be unequipped.", null);
@@ -5648,7 +5648,7 @@ public class InventoryDialogue {
 									}
 								};
 							}
-							
+
 						} else if(index == 5) {
 							return new Response("Change colour", "Change the colour of this item of clothing.", DYE_EQUIPPED_CLOTHING_CHARACTER_CREATION) {
 								@Override
@@ -5656,7 +5656,7 @@ public class InventoryDialogue {
 									resetClothingDyeColours();
 								}
 							};
-							
+
 						} else if(index == 6) {
 							return new Response("Unequip", "Unequip the " + clothing.getName() + ".", INVENTORY_MENU){
 								@Override
@@ -5664,18 +5664,18 @@ public class InventoryDialogue {
 									unequipClothingToFloor(Main.game.getPlayer(), clothing);
 								}
 							};
-								
+
 						} else {
 							return null;
 						}
-						
+
 					case SEX:
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Drop", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Drop", "This area is full, so you can't drop "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " here!", null);
 								} else {
@@ -5700,11 +5700,11 @@ public class InventoryDialogue {
 										return new Response("Drop", "You can't unequip the " + clothing.getName() + ", as other clothing is blocking you from doing so!", null);
 									}
 								}
-								
+
 							} else {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Store", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Store", "This area is full, so you can't store "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " here!", null);
 								} else {
@@ -5730,10 +5730,10 @@ public class InventoryDialogue {
 									}
 								}
 							}
-							
+
 						} else if (index==4) {
 							return new Response("Dye", "You can't dye "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" clothes in sex!", null);
-							
+
 						} else if(index == 5) {
 							if(clothing.isSealed()) {
 								if(getJinxRemovalBlockedResponse()==null) {
@@ -5772,12 +5772,12 @@ public class InventoryDialogue {
 								}
 								return new Response("Enchant", "You can't enchant equipped clothing!", null);
 							}
-							
+
 						} else if(index == 6 && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 							if(!Main.sex.getSexManager().isAbleToRemoveSelfClothing(Main.game.getPlayer())) {
 								return new Response("Unequip", "You can't unequip the " + clothing.getName() + " in this sex scene!", null);
 							}
-							
+
 							if (owner.isAbleToUnequip(clothing, false, Main.game.getPlayer())) {
 								return new Response("Unequip", "Unequip the " + clothing.getName() + ".", Main.sex.SEX_DIALOGUE){
 									@Override
@@ -5793,24 +5793,24 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Unequip", "You can't unequip the " + clothing.getName() + ", as other clothing is blocking you from doing so!", null);
 							}
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).size()) {
 							if (clothing.getDisplacedList().contains(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11))) {
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 										"The "+ clothing.getName()+ " "
 										+(clothing.getClothingType().isPlural()?"have":"has")+" already been "
 												+ clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription() + "!", null);
-								
+
 							} else {
 								if(!Main.sex.getSexManager().isAbleToRemoveSelfClothing(Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11).getDescription()),
 											"You can't can't "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription()
 											+ " "+(owner.isPlayer()?"your":owner.getName("")+"'s")+" " + clothing.getName() + " in this sex scene!", null);
 								}
-								
+
 								if(owner.isAbleToBeDisplaced(clothing, clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11), false, false, Main.game.getPlayer())) {
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11).getDescription()),
 											Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index - 11).getDescription()) + " the " + clothing.getName() + ". "
@@ -5830,31 +5830,31 @@ public class InventoryDialogue {
 											Main.sex.setSexStarted(true);
 										}
 									};
-								
+
 								} else {
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 											"You can't "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(owner, clothing.getSlotEquippedTo()).get(index -11).getDescription()
 											+ " the " + clothing.getName() + ", as other clothing is in the way!", null);
 								}
 							}
-							
+
 						} else {
 							return null;
 						}
 				}
-				
+
 			// ****************************** ITEM DOES NOT BELONG TO PLAYER ******************************
-				
+
 			} else {
 				InventorySlot slotEquippedTo = clothing.getSlotEquippedTo();
 				switch(interactionType) {
 					case COMBAT:
 						if (index == 1) {
 							return new Response("Drop", "You can't make someone drop their clothing while fighting them!", null);
-							
+
 						} else if (index==4) {
 							return new Response("Dye", "You can't dye someone else's equipped clothing while you're fighting them!", null);
-							
+
 						} else if(index == 5) {
 							if(clothing.isSealed()) {
 								if(getJinxRemovalBlockedResponse()==null) {
@@ -5871,38 +5871,38 @@ public class InventoryDialogue {
 								}
 								return new Response("Enchant", "You can't enchant equipped clothing!", null);
 							}
-							
+
 						} else if(index == 6) {
 							return new Response("Unequip", "You can't unequip someone's clothing while fighting them!", null);
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).size()){
 							if (clothing.getDisplacedList().contains(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11))) {
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 										"The "+ clothing.getName()+ " "
 										+(clothing.getClothingType().isPlural()?"have":"has")+" already been "
 												+ clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription() + "!", null);
-								
+
 							} else {
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 										"You can't "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription() + " the " + clothing.getName() + " while in a fight!", null);
 							}
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case FULL_MANAGEMENT: case CHARACTER_CREATION:
 						boolean inventoryFull = Main.game.getPlayer().isInventoryFull() && !Main.game.getPlayer().hasClothing(clothing) && clothing.getRarity()!=Rarity.QUEST;
-						
+
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Drop", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Drop", UtilText.parse(inventoryNPC, "This area is full, so you can't drop [npc.namePos] " + clothing.getName() + " here!"), null);
 								} else {
@@ -5917,11 +5917,11 @@ public class InventoryDialogue {
 										}
 									};
 								}
-								
+
 							} else {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Store", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Store", UtilText.parse(inventoryNPC, "This area is full, so you can't store [npc.namePos] " + clothing.getName() + " here!"), null);
 								} else {
@@ -5937,14 +5937,14 @@ public class InventoryDialogue {
 									};
 								}
 							}
-							
+
 						} else if(index==2) {
 							if(inventoryFull) {
 								return new Response("Take", "Your inventory is full, so you can't take this!", null);
-								
+
 							} else if(clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 								return new Response("Take", "This piece of clothing is automatically discarded when unequipped, so you can't take it!", null);
-								
+
 							} else {
 								return new Response("Take",
 										UtilText.parse(inventoryNPC, "Take [npc.namePos] " + clothing.getName() + " and add it to your inventory."),
@@ -5958,10 +5958,10 @@ public class InventoryDialogue {
 									}
 								};
 							}
-							
+
 						} else if (index==4) {
 							if (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
-								return new Response("Dye", 
+								return new Response("Dye",
 										Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 											?"Use your proficiency with [style.colourEarth(Earth spells)] to dye this item."
 											:"Use a dye-brush to dye this item of clothing.",
@@ -5971,11 +5971,11 @@ public class InventoryDialogue {
 										resetClothingDyeColours();
 									}
 								};
-								
+
 							} else {
 								return new Response("Dye", UtilText.parse(inventoryNPC, "You'll need to find a dye-brush if you want to dye [npc.namePos] clothes."), null);
 							}
-							
+
 						} else if(index == 5) {
 							if(clothing.isSealed()) {
 								if(getJinxRemovalBlockedResponse()==null) {
@@ -6010,7 +6010,7 @@ public class InventoryDialogue {
 								}
 								return new Response("Enchant", "You can't enchant equipped clothing!", null);
 							}
-							
+
 						} else if(index == 6 && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 							if(!clothing.getClothingType().isAbleToBeDropped()) {
 								return new Response("Unequip", UtilText.parse(inventoryNPC, "As it's a unique item, the " + clothing.getName() + " cannot be unequipped into [npc.namePos] inventory."), null);
@@ -6021,12 +6021,12 @@ public class InventoryDialogue {
 									Main.game.getTextEndStringBuilder().append("<p style='text-align:center;'>" + unequipClothingToInventory(Main.game.getPlayer(), clothing) + "</p>");
 								}
 							};
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).size()){
-							
+
 							if (clothing.getDisplacedList().contains(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11))) {
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11).getOppositeDescription()),
 										Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11).getOppositeDescription()) + " the " + clothing.getName() + ". "
@@ -6059,24 +6059,24 @@ public class InventoryDialogue {
 									}
 								};
 							}
-							
+
 						} else {
 							return null;
 						}
-						
+
 					case SEX:
 						if (index == 1) {
 							boolean areaFull = Main.game.isPlayerTileFull() && !Main.game.getPlayerCell().getInventory().hasClothing(clothing);
 							if(Main.game.getPlayer().getLocationPlace().isItemsDisappear()) {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Drop", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(!Main.sex.getSexManager().isAbleToRemoveOthersClothing(Main.game.getPlayer(), clothing)) {
 									return new Response("Drop", UtilText.parse(inventoryNPC, "You can't unequip the " + clothing.getName() + " in this sex scene!"), null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Drop", UtilText.parse(inventoryNPC, "This area is full, so you can't drop [npc.namePos] " + clothing.getName() + " here!"), null);
-									
+
 								} else {
 									if (owner.isAbleToUnequip(clothing, false, Main.game.getPlayer())) {
 										return new Response((clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)?"Discard":"Drop"),
@@ -6098,14 +6098,14 @@ public class InventoryDialogue {
 										return new Response("Drop", "You can't unequip the " + clothing.getName() + ", as other clothing is blocking you from doing so!", null);
 									}
 								}
-								
+
 							} else {
 								if(!clothing.getClothingType().isAbleToBeDropped()) {
 									return new Response("Store", "You cannot drop the " + clothing.getName() + "!", null);
-									
+
 								} else if(!Main.sex.getSexManager().isAbleToRemoveOthersClothing(Main.game.getPlayer(), clothing)) {
 									return new Response("Store", UtilText.parse(inventoryNPC, "You can't unequip the " + clothing.getName() + " in this sex scene!"), null);
-									
+
 								} else if(areaFull && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 									return new Response("Store", UtilText.parse(inventoryNPC, "This area is full, so you can't store [npc.namePos] " + clothing.getName() + " here!"), null);
 								} else {
@@ -6130,10 +6130,10 @@ public class InventoryDialogue {
 									}
 								}
 							}
-							
+
 						} else if (index==4) {
 							return new Response("Dye", UtilText.parse(inventoryNPC, "You can't dye [npc.namePos] clothes in sex!"), null);
-							
+
 						} else if(index == 5) {
 							if(clothing.isSealed()) {
 								if(getJinxRemovalBlockedResponse()==null) {
@@ -6171,12 +6171,12 @@ public class InventoryDialogue {
 								}
 								return new Response("Enchant", "You can't enchant equipped clothing!", null);
 							}
-							
+
 						} else if(index == 6 && !clothing.getClothingType().isDiscardedOnUnequip(slotEquippedTo)) {
 							if(!Main.sex.getSexManager().isAbleToRemoveOthersClothing(Main.game.getPlayer(), clothing)) {
 								return new Response("Unequip", "You can't unequip the " + clothing.getName() + " in this sex scene!", null);
 							}
-							
+
 							if (owner.isAbleToUnequip(clothing, false, Main.game.getPlayer())) {
 								return new Response("Unequip", "Unequip the " + clothing.getName() + ".", Main.sex.SEX_DIALOGUE){
 									@Override
@@ -6192,25 +6192,25 @@ public class InventoryDialogue {
 							} else {
 								return new Response("Unequip", "You can't unequip the " + clothing.getName() + ", as other clothing is blocking you from doing so!", null);
 							}
-							
+
 						} else if (index == 10) {
 							return getQuickTradeResponse();
-							
+
 						} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).size()){
 							if (clothing.getDisplacedList().contains(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11))) {
 								return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 										"The "+ clothing.getName()+ " "
 										+(clothing.getClothingType().isPlural()?"have":"has")+" already been "
 												+ clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription() + "!", null);
-								
+
 							} else {
 								if(owner.isAbleToBeDisplaced(clothing, clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11), false, false, Main.game.getPlayer())){
-									
+
 									if(!Main.sex.getSexManager().isAbleToRemoveOthersClothing(Main.game.getPlayer(), clothing)) {
 										return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11).getDescription()),
 												"You "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription() + " the " + clothing.getName() + " in this sex scene!", null);
 									}
-									
+
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11).getDescription()),
 											Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11).getDescription()) + " the " + clothing.getName() + ". "
 													+ clothing.getClothingBlockingDescription(
@@ -6229,25 +6229,25 @@ public class InventoryDialogue {
 											Main.sex.setSexStarted(true);
 										}
 									};
-								
+
 								} else {
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 											"You can't "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()
 											+ " the " + clothing.getName() + ", as other clothing is in the way!", null);
 								}
 							}
-							
+
 						} else {
 							return null;
 						}
-						
+
 						case TRADING:
 							if (index == 1) {
 								return new Response("Drop", UtilText.parse(inventoryNPC, "You can't make [npc.name] drop [npc.her] clothing!"), null);
-								
+
 							} else if (index==4) {
 								return new Response("Dye", UtilText.parse(inventoryNPC, "You can't dye [npc.namePos] clothes!"), null);
-								
+
 							}  else if(index == 5) {
 								if(clothing.isCondom()) {
 									if(clothing.getCondomEffect().getPotency().isNegative()) {
@@ -6256,30 +6256,30 @@ public class InventoryDialogue {
 									return new Response("Sabotage", "You can't sabotage [npc.namePos] condom!", null);
 								}
 								return new Response("Enchant", UtilText.parse(inventoryNPC, "You can't enchant [npc.namePos] clothing!"), null);
-								
+
 							} else if(index == 6) {
 								return new Response("Unequip", UtilText.parse(inventoryNPC, "You can't unequip [npc.namePos] clothing!"), null);
-								
+
 							} else if (index == 10) {
 								return getQuickTradeResponse();
-								
+
 							} else if (index > 10 && index - 11 < clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).size()){
 								if (clothing.getDisplacedList().contains(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index - 11))) {
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 											"The "+ clothing.getName()+ " "
 													+(clothing.getClothingType().isPlural()?"have":"has")+" already been "
 													+ clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription() + "!", null);
-									
+
 								} else {
 									return new Response(Util.capitaliseSentence(clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription()),
 											"You can't "+clothing.getClothingType().getBlockedPartsKeysAsListWithoutNONE(inventoryNPC, clothing.getSlotEquippedTo()).get(index -11).getDescription() + " the " + clothing.getName() + "!", null);
 								}
-								
+
 							} else {
 								return null;
 							}
 					}
-				
+
 				}
 				return null;
 		}
@@ -6291,7 +6291,7 @@ public class InventoryDialogue {
 	};
 
 	public static DamageType damageTypePreview;
-	
+
 	public static Colour dyePreviewPrimary;
 	public static Colour dyePreviewSecondary;
 	public static Colour dyePreviewTertiary;
@@ -6299,7 +6299,7 @@ public class InventoryDialogue {
 	public static Colour dyePreviewPatternPrimary;
 	public static Colour dyePreviewPatternSecondary;
 	public static Colour dyePreviewPatternTertiary;
-	
+
 	private static void resetClothingDyeColours() {
 		dyePreviewPrimary = clothing.getColour();
 		dyePreviewSecondary = clothing.getSecondaryColour();
@@ -6314,16 +6314,16 @@ public class InventoryDialogue {
 		dyePreviewPrimary = weapon.getPrimaryColour();
 		dyePreviewSecondary = weapon.getSecondaryColour();
 		dyePreviewTertiary = weapon.getTertiaryColour();
-		
+
 		damageTypePreview = weapon.getDamageType();
 	}
-	
+
 	private static String getClothingDyeUI() {
 		InventorySlot slotEquippedTo = clothing.getSlotEquippedTo();
 		if(slotEquippedTo==null) {
 			slotEquippedTo = clothing.getClothingType().getEquipSlots().get(0);
 		}
-		
+
 		inventorySB = new StringBuilder(
 				"<div class='container-full-width'>"
 					+ "<div class='inventoryImage'>"
@@ -6336,9 +6336,9 @@ public class InventoryDialogue {
 						+ "Select the desired colours from the coloured buttons below, and after using the preview to see how the new clothing will look, press the 'Dye' option at the bottom of the screen to apply your changes."
 					+ "</p>"
 				+ "</div>"
-					
+
 				+ "<br/>"
-				
+
 				+ "<div class='container-full-width'>"
 					+ "<div class='inventoryImage'>"
 						+ "<div class='inventoryImage-content'>"
@@ -6359,9 +6359,9 @@ public class InventoryDialogue {
 									+ "'></div>"
 							+ "</div>");
 		}
-		
+
 		inventorySB.append("</div>");
-		
+
 		if(!clothing.getClothingType().getAllAvailableSecondaryColours().isEmpty()) {
 			inventorySB.append("<div class='container-quarter-width' style='width:calc(75% - 16px);'>"
 					+ "Secondary Colour:<br/>");
@@ -6393,13 +6393,13 @@ public class InventoryDialogue {
 			}
 			inventorySB.append("</div>");
 		}
-		
+
 		if(clothing.getClothingType().isPatternAvailable()){
 			inventorySB.append(
 					"<br/>"
 					+ "<div class='container-full-width'>"
 					+ "Pattern:<br/>");
-	 
+
 			for (Pattern pattern : Pattern.getAllPatterns().values()) {
 				if (dyePreviewPattern.equals(pattern.getName())) {
 					inventorySB.append(
@@ -6415,7 +6415,7 @@ public class InventoryDialogue {
 			}
 			inventorySB.append("</div>");
 
-			
+
 			if(Pattern.getPattern(dyePreviewPattern)!=null && Pattern.getPattern(dyePreviewPattern).isPrimaryRecolourAvailable()) {
 				inventorySB.append("<div class='container-full-width'>"
 						+ "Pattern Primary Colour:<br/>");
@@ -6431,7 +6431,7 @@ public class InventoryDialogue {
 				}
 				inventorySB.append("</div>");
 			}
-			
+
 			if(Pattern.getPattern(dyePreviewPattern)!=null && Pattern.getPattern(dyePreviewPattern).isSecondaryRecolourAvailable()) {
 				inventorySB.append("<div class='container-full-width'>"
 						+ "Pattern Secondary Colour:<br/>");
@@ -6447,7 +6447,7 @@ public class InventoryDialogue {
 				}
 				inventorySB.append("</div>");
 			}
-			
+
 			if(Pattern.getPattern(dyePreviewPattern)!=null && Pattern.getPattern(dyePreviewPattern).isTertiaryRecolourAvailable()) {
 				inventorySB.append("<div class='container-full-width'>"
 						+ "Pattern Tertiary Colour:<br/>");
@@ -6463,13 +6463,13 @@ public class InventoryDialogue {
 				}
 				inventorySB.append("</div>");
 			}
-			
+
 		}
 		inventorySB.append("</div>");
-		
+
 		return inventorySB.toString();
 	}
-	
+
 	private static String getWeaponDyeUI() {
 		inventorySB = new StringBuilder(
 				"<div class='container-full-width'>"
@@ -6491,8 +6491,8 @@ public class InventoryDialogue {
 						+ "</div>"
 					+ "</div>"
 					+ "<h3 style='text-align:center;'><b>Dye & Preview</b></h3>");
-		
-		
+
+
 		inventorySB.append("<div class='container-quarter-width' style='text-align:center;width:calc(75% - 16px);'>"
 				+ "<b>Damage type:</b><br/>");
 		for(DamageType dt : weapon.getWeaponType().getAvailableDamageTypes()) {
@@ -6508,7 +6508,7 @@ public class InventoryDialogue {
 			colourOptions = true;
 			inventorySB.append("<div class='container-quarter-width' style='width:calc(75% - 16px);'>"
 					+ "Primary:<br/>");
-			
+
 			for (Colour c : weapon.getWeaponType().getAllAvailablePrimaryColours()) {
 				inventorySB.append("<div class='normal-button"+(dyePreviewPrimary==c?" selected":"")+"' id='PRIMARY_" + (weapon.getWeaponType().hashCode() + "_" + c.toString()) + "'"
 										+ " style='width:auto; margin-right:4px;"+(dyePreviewPrimary==c?" background-color:"+Colour.BASE_GREEN.getShades()[4]+";":"")+"'>"
@@ -6519,10 +6519,10 @@ public class InventoryDialogue {
 										+ "'></div>"
 								+ "</div>");
 			}
-			
+
 			inventorySB.append("</div>");
 		}
-		
+
 		if(!weapon.getWeaponType().getAllAvailableSecondaryColours().isEmpty()) {
 			colourOptions = true;
 			inventorySB.append("<div class='container-quarter-width' style='width:calc(75% - 16px);'>"
@@ -6556,7 +6556,7 @@ public class InventoryDialogue {
 			}
 			inventorySB.append("</div>");
 		}
-		
+
 		if(!colourOptions) {
 			inventorySB.append("<div class='container-half-width' style='text-align:center;'>"
 					+ "[style.colourDisabled(No dye options available...)]"
@@ -6564,17 +6564,17 @@ public class InventoryDialogue {
 		}
 
 		inventorySB.append("</div>");
-		
+
 		return inventorySB.toString();
 	}
-	
+
 	public static final DialogueNode DYE_CLOTHING = new DialogueNode("Dye clothing", "", true) {
 
 		@Override
 		public String getContent() {
 			return getClothingDyeUI();
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -6590,9 +6590,9 @@ public class InventoryDialogue {
 						&& dyePreviewPatternTertiary == clothing.getPatternTertiaryColour()) {
 					return new Response("Dye",
 							"You need to choose different colours before being able to dye the " + clothing.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye",
 						"Dye the " + clothing.getName() + " in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -6616,14 +6616,14 @@ public class InventoryDialogue {
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
 											+ "Thanks to your proficiency with [style.boldEarth(Earth spells)], you are able to dye the " + clothing.getName() + " without needing to use a dye-brush!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							owner.removeClothing(clothing);
 							AbstractClothing dyedClothing = new AbstractClothing(clothing) {};
@@ -6650,7 +6650,7 @@ public class InventoryDialogue {
 							Main.game.getPlayerCell().getInventory().addClothing(dyedClothing);
 							Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedClothing.getDisplayName(true)), false);
 						}
-						
+
 					}
 				};
 
@@ -6664,9 +6664,9 @@ public class InventoryDialogue {
 						&& dyePreviewPatternTertiary == clothing.getPatternTertiaryColour()) {
 					return new Response("Dye all (stack)",
 							"You need to choose different colours before being able to dye the " + clothing.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				int stackCount = 0;
 				if(owner!=null) {
 					stackCount = owner.getClothingCount(clothing);
@@ -6675,23 +6675,23 @@ public class InventoryDialogue {
 				}
 
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Dye all (stack)",
 							"You only have one "+clothing.getName()+", so you should dye it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
-					
+
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all (stack)",
 								"You do not have enough dye brushes to dye all the " + clothing.getNamePlural() + "! You have "+dyeBrushCount+" dye brushes, but there are "+stackCount+" "+clothing.getNamePlural()+" in this stack...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Dye all (stack)",
 						"Dye all " + clothing.getNamePlural() + " which are in this clothing stack ("+stackCount+" in total) in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -6709,16 +6709,16 @@ public class InventoryDialogue {
 									+ "<p>"
 										+ "<b>The "+clothing.getName()+(clothing.getClothingType().isPlural()?"have":"has")+" been dyed</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+clothing.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -6729,7 +6729,7 @@ public class InventoryDialogue {
 												+" of the " + clothing.getNamePlural() + " without needing to use a single dye-brush!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							owner.removeClothing(clothing, finalCount);
 							AbstractClothing dyedClothing = new AbstractClothing(clothing) {};
@@ -6769,9 +6769,9 @@ public class InventoryDialogue {
 						&& dyePreviewPatternTertiary == clothing.getPatternTertiaryColour()) {
 					return new Response("Dye all",
 							"You need to choose different colours before being able to dye the " + clothing.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				List<AbstractClothing> clothingMatches = new ArrayList<>();
 				int stackCount = 0;
 				if(owner!=null) {
@@ -6789,25 +6789,25 @@ public class InventoryDialogue {
 						}
 					}
 				}
-				
+
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Dye all",
 							"You only have one "+clothing.getName()+", so you should dye it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
-					
+
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all (stack)",
 								"You do not have enough dye brushes to dye all the " + clothing.getNamePlural() + "! You have "+dyeBrushCount+" dye brushes, but there are "+stackCount+" "+clothing.getNamePlural()+" in total...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Dye all",
 						"Dye all " + clothing.getNamePlural() + " which are in this clothing stack ("+stackCount+" in total) in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -6825,16 +6825,16 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+clothing.getName()+(clothing.getClothingType().isPlural()?"have":"has")+" been dyed</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+clothing.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -6845,7 +6845,7 @@ public class InventoryDialogue {
 												+" of the " + clothing.getNamePlural() + " without needing to use a single dye-brush!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							for(AbstractClothing c : clothingMatches) {
 								int clothingCount = owner.getAllClothingInInventory().get(c);
@@ -6861,7 +6861,7 @@ public class InventoryDialogue {
 								owner.addClothing(dyedClothing, clothingCount, false, false);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedClothing.getDisplayName(true)), false);
 							}
-							
+
 						} else {
 							for(AbstractClothing c : clothingMatches) {
 								int clothingCount = Main.game.getPlayerCell().getInventory().getAllClothingInInventory().get(c);
@@ -6878,7 +6878,7 @@ public class InventoryDialogue {
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedClothing.getDisplayName(true)), false);
 							}
 						}
-						
+
 					}
 				};
 
@@ -6899,7 +6899,7 @@ public class InventoryDialogue {
 		public String getContent() {
 			return getClothingDyeUI();
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -6915,9 +6915,9 @@ public class InventoryDialogue {
 						&& dyePreviewPatternTertiary == clothing.getPatternTertiaryColour()) {
 					return new Response("Dye",
 							"You need to choose different colours before being able to dye the " + clothing.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye",
 								"Dye the " + clothing.getName() + " in the colours you have chosen."
 										+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -6941,14 +6941,14 @@ public class InventoryDialogue {
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
 											+ "Thanks to your proficiency with [style.boldEarth(Earth spells)], you are able to dye the " + clothing.getName() + " without needing to use a dye-brush!"
 										+ "</p>");
 						}
-						
+
 						clothing.setColour(dyePreviewPrimary);
 						clothing.setSecondaryColour(dyePreviewSecondary);
 						clothing.setTertiaryColour(dyePreviewTertiary);
@@ -6969,15 +6969,15 @@ public class InventoryDialogue {
 			return DialogueNodeType.INVENTORY;
 		}
 	};
-	
-	
+
+
 	public static final DialogueNode DYE_CLOTHING_CHARACTER_CREATION = new DialogueNode("Choose Colour", "", true) {
 
 		@Override
 		public String getContent() {
 			return getClothingDyeUI();
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -6990,9 +6990,9 @@ public class InventoryDialogue {
 						&& dyePreviewPattern.equals(clothing.getPattern())) {
 					return new Response("Dye",
 							"You need to choose different colours before being able to dye the " + clothing.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye",
 						"Change the colour of the " + clothing.getName() + " to the colours you have chosen.",
 						INVENTORY_MENU){
@@ -7028,7 +7028,7 @@ public class InventoryDialogue {
 		public String getContent() {
 			return getClothingDyeUI();
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -7041,9 +7041,9 @@ public class InventoryDialogue {
 						&& dyePreviewPattern.equals(clothing.getPattern())) {
 					return new Response("Dye",
 							"You need to choose different colours before being able to dye the " + clothing.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye",
 						"Change the colour of the " + clothing.getName() + " to the colours you have chosen.",
 						CLOTHING_EQUIPPED){
@@ -7075,7 +7075,7 @@ public class InventoryDialogue {
 		public String getContent() {
 			return getWeaponDyeUI();
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -7086,17 +7086,17 @@ public class InventoryDialogue {
 						&& !Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					return new Response("Dye",
 							"You do not have a dye-brush, so cannot change the colours of the " + weapon.getName() + "...",
-							null); 
+							null);
 				}
-				
+
 				if(dyePreviewPrimary == weapon.getPrimaryColour()
 						&& dyePreviewSecondary == weapon.getSecondaryColour()
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye",
 						"Dye the " + weapon.getName() + " in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7120,14 +7120,14 @@ public class InventoryDialogue {
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
 											+ "Thanks to your proficiency with [style.boldEarth(Earth spells)], you are able to dye the " + weapon.getName() + " without needing to use a dye-brush!"
 										+ "</p>");
 						}
-						 
+
 						if(owner!=null) {
 							owner.removeWeapon(weapon);
 							AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(weapon);
@@ -7154,15 +7154,15 @@ public class InventoryDialogue {
 						&& !Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					return new Response("Reforge",
 							"You do not have a reforging hammer, so cannot change the damage type of the " + weapon.getName() + "...",
-							null); 
+							null);
 				}
-				
+
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Reforge",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Reforge",
 						"Reforge the " + weapon.getName() + " into the damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7173,7 +7173,7 @@ public class InventoryDialogue {
 					public void effects(){
 						if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 							Main.game.getPlayer().useItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), owner, false);
-							
+
 							Main.game.getTextEndStringBuilder().append(
 									"<p style='text-align:center;'>"
 										+ ItemType.REFORGE_HAMMER.getReforgeHammerEffects(weapon, damageTypePreview)
@@ -7187,14 +7187,14 @@ public class InventoryDialogue {
 														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
 											+ "Thanks to your proficiency with [style.boldEarth(Earth spells)], you are able to reforge the " + weapon.getName() + " without needing to use a reforging hammer!"
 										+ "</p>");
 						}
-						 
+
 						if(owner!=null) {
 							owner.removeWeapon(weapon);
 							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
@@ -7219,23 +7219,23 @@ public class InventoryDialogue {
 						&& !Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					return new Response("Dye & reforge",
 							"You do not have both a dye brush and a reforging hammer, so cannot dye and reforge the " + weapon.getName() + "...",
-							null); 
+							null);
 				}
-				
+
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Dye & reforge",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				if(dyePreviewPrimary == weapon.getPrimaryColour()
 						&& dyePreviewSecondary == weapon.getSecondaryColour()
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye & reforge",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye & reforge",
 						"Dye and reforge the " + weapon.getName() + " into the colours and damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7268,14 +7268,14 @@ public class InventoryDialogue {
 														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
 											+ "Thanks to your proficiency with [style.boldEarth(Earth spells)], you are able to dye and reforge the " + weapon.getName() + " without needing to use a dye-brush or reforging hammer!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							owner.removeWeapon(weapon);
 							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
@@ -7305,9 +7305,9 @@ public class InventoryDialogue {
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye all (stack)",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				int stackCount = 0;
 				if(owner!=null) {
 					stackCount = owner.getWeaponCount(weapon);
@@ -7316,23 +7316,23 @@ public class InventoryDialogue {
 				}
 
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Dye all (stack)",
 							"You only have one "+weapon.getName()+", so you should dye it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
-					
+
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all (stack)",
 								"You do not have enough dye brushes to dye all the " + weapon.getNamePlural() + "! You have "+dyeBrushCount+" dye brushes, but there are "+stackCount+" "+weapon.getNamePlural()+" in this stack...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Dye all (stack)",
 						"Dye all " + weapon.getNamePlural() + " which are in this weapon stack ("+stackCount+" in total) in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7350,16 +7350,16 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+weapon.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -7370,7 +7370,7 @@ public class InventoryDialogue {
 												+" of the " + weapon.getNamePlural() + " without needing to use a single dye-brush!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							owner.removeWeapon(weapon, finalCount);
 							AbstractWeapon dyedWeapon = AbstractWeaponType.generateWeapon(weapon);
@@ -7394,9 +7394,9 @@ public class InventoryDialogue {
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Reforge all (stack)",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				int stackCount = 0;
 				if(owner!=null) {
 					stackCount = owner.getWeaponCount(weapon);
@@ -7405,23 +7405,23 @@ public class InventoryDialogue {
 				}
 
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Reforge all (stack)",
 							"You only have one "+weapon.getName()+", so you should reforge it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
-					
+
 					if(reforgeHammerCount<stackCount) {
 						return new Response("Reforge all (stack)",
 								"You do not have enough reforging hammers to dye all the " + weapon.getNamePlural() + "! You have "+reforgeHammerCount+" reforging hammers, but there are "+stackCount+" "+weapon.getNamePlural()+" in this stack...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Reforge all (stack)",
 						"Reforge all " + weapon.getNamePlural() + " which are in this weapon stack ("+stackCount+" in total) into the damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7439,16 +7439,16 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been reforged</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+weapon.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
 														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -7459,7 +7459,7 @@ public class InventoryDialogue {
 												+" of the " + weapon.getNamePlural() + " without needing to use a single reforging hammer!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							owner.removeWeapon(weapon, finalCount);
 							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
@@ -7483,18 +7483,18 @@ public class InventoryDialogue {
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Dye & reforge all (stack)",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				if(dyePreviewPrimary == weapon.getPrimaryColour()
 						&& dyePreviewSecondary == weapon.getSecondaryColour()
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye & reforge all (stack)",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
-				
+
+
 				int stackCount = 0;
 				if(owner!=null) {
 					stackCount = owner.getWeaponCount(weapon);
@@ -7503,24 +7503,24 @@ public class InventoryDialogue {
 				}
 
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Dye & reforge all (stack)",
 							"You only have one "+weapon.getName()+", so you should dye & reforge it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
 					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
-					
+
 					if(dyeBrushCount<stackCount || reforgeHammerCount<stackCount) {
 						return new Response("Dye & reforge all (stack)",
 								"You do not have enough dye brushes or reforge hammers to dye & reforge all "+stackCount+" "+weapon.getNamePlural()+" in this stack...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Dye & reforge all (stack)",
 						"Dye & reforge all " + weapon.getNamePlural() + " which are in this weapon stack ("+stackCount+" in total) in the colours and damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7541,9 +7541,9 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed and reforged</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+weapon.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
@@ -7557,7 +7557,7 @@ public class InventoryDialogue {
 														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -7568,7 +7568,7 @@ public class InventoryDialogue {
 												+" of the " + weapon.getNamePlural() + " without needing to use a single dye-brush or reforging hammer!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							owner.removeWeapon(weapon, finalCount);
 							AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
@@ -7598,9 +7598,9 @@ public class InventoryDialogue {
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye all",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				List<AbstractWeapon> weaponMatches = new ArrayList<>();
 				int stackCount = 0;
 				if(owner!=null) {
@@ -7618,25 +7618,25 @@ public class InventoryDialogue {
 						}
 					}
 				}
-				
+
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Dye all",
 							"You only have one "+weapon.getName()+", so you should dye it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
-					
+
 					if(dyeBrushCount<stackCount) {
 						return new Response("Dye all (stack)",
 								"You do not have enough dye brushes to dye all the " + weapon.getNamePlural() + "! You have "+dyeBrushCount+" dye brushes, but there are "+stackCount+" "+weapon.getNamePlural()+" in total...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Dye all",
 						"Dye all " + weapon.getNamePlural() + " which are in this clothing stack ("+stackCount+" in total) in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7654,16 +7654,16 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+weapon.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -7674,7 +7674,7 @@ public class InventoryDialogue {
 												+" of the " + weapon.getNamePlural() + " without needing to use a single dye-brush!"
 										+ "</p>");
 						}
-						
+
 
 						if(owner!=null) {
 							for(AbstractWeapon w : weaponMatches) {
@@ -7686,7 +7686,7 @@ public class InventoryDialogue {
 								owner.addWeapon(dyedWeapon, weaponCount, false, false);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed", dyedWeapon.getDisplayName(true)), false);
 							}
-							
+
 						} else {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = Main.game.getPlayerCell().getInventory().getAllWeaponsInInventory().get(w);
@@ -7705,9 +7705,9 @@ public class InventoryDialogue {
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Reforge all",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				List<AbstractWeapon> weaponMatches = new ArrayList<>();
 				int stackCount = 0;
 				if(owner!=null) {
@@ -7725,25 +7725,25 @@ public class InventoryDialogue {
 						}
 					}
 				}
-				
+
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Reforge all",
 							"You only have one "+weapon.getName()+", so you should reforge it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
-					
+
 					if(reforgeHammerCount<stackCount) {
 						return new Response("Reforge all",
 								"You do not have enough reforging hammers to dye all the " + weapon.getNamePlural() + "! You have "+reforgeHammerCount+" reforging hammers, but there are "+stackCount+" "+weapon.getNamePlural()+" in total...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Reforge all",
 						"Reforge all " + weapon.getNamePlural() + " which are in this weapon stack ("+stackCount+" in total) into the damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7761,16 +7761,16 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been reforged</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+weapon.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.REFORGE_HAMMER) || Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER))
 														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -7811,17 +7811,17 @@ public class InventoryDialogue {
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Dye & reforge all",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				if(dyePreviewPrimary == weapon.getPrimaryColour()
 						&& dyePreviewSecondary == weapon.getSecondaryColour()
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye & reforge all",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				List<AbstractWeapon> weaponMatches = new ArrayList<>();
 				int stackCount = 0;
 				if(owner!=null) {
@@ -7839,26 +7839,26 @@ public class InventoryDialogue {
 						}
 					}
 				}
-				
+
 				int finalCount = stackCount;
-				
+
 				if(stackCount==1) {
 					return new Response("Dye & reforge all",
 							"You only have one "+weapon.getName()+", so you should dye & reforge it using the individual action...",
-							null); 
+							null);
 				}
-				
+
 				if(!Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					int dyeBrushCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.DYE_BRUSH));
 					int reforgeHammerCount = Main.game.getPlayer().getItemCount(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER));
-					
+
 					if(dyeBrushCount<stackCount || reforgeHammerCount<stackCount) {
 						return new Response("Dye & reforge all",
 								"You do not have enough dye brushes or reforge hammers to dye & reforge all "+stackCount+" "+weapon.getNamePlural()+" in this stack...",
-								null); 
+								null);
 					}
 				}
-				
+
 				return new Response("Dye & reforge all",
 						"Dye & reforge all " + weapon.getNamePlural() + " which are in this weapon stack ("+stackCount+" in total) in the colours and damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7879,9 +7879,9 @@ public class InventoryDialogue {
 									+ "<p>"
 									+ "<b>The "+weapon.getName()+(weapon.getWeaponType().isPlural()?"have":"has")+" been dyed and reforged</b>!"
 									+ "</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>You then repeat this for the other "+Util.intToString(finalCount-1)+" "+weapon.getNamePlural()+"...</p>");
-							
+
 							Main.game.getTextEndStringBuilder().append("<p>"
 										+ (Main.game.getPlayer().hasItemType(ItemType.DYE_BRUSH)
 												?"You have <b>" + Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH))
@@ -7895,7 +7895,7 @@ public class InventoryDialogue {
 														+ "</b> reforging hammer" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "" : "s") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -7906,7 +7906,7 @@ public class InventoryDialogue {
 												+" of the " + weapon.getNamePlural() + " without needing to use a single dye-brush or reforging hammer!"
 										+ "</p>");
 						}
-						
+
 						if(owner!=null) {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = owner.getAllWeaponsInInventory().get(w);
@@ -7919,7 +7919,7 @@ public class InventoryDialogue {
 								owner.addWeapon(AbstractWeaponType.generateWeapon(modifiedWeapon), weaponCount, false, false);
 								Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Dyed & Reforged", modifiedWeapon.getDisplayName(true)), false);
 							}
-							
+
 						} else {
 							for(AbstractWeapon w : weaponMatches) {
 								int weaponCount = Main.game.getPlayerCell().getInventory().getAllWeaponsInInventory().get(w);
@@ -7953,7 +7953,7 @@ public class InventoryDialogue {
 		public String getContent() {
 			return getWeaponDyeUI();
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 0) {
@@ -7964,17 +7964,17 @@ public class InventoryDialogue {
 						&& !Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					return new Response("Dye",
 							"You do not have a dye-brush, so cannot change the colours of the " + weapon.getName() + "...",
-							null); 
+							null);
 				}
-				
+
 				if(dyePreviewPrimary == weapon.getPrimaryColour()
 						&& dyePreviewSecondary == weapon.getSecondaryColour()
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye",
 						"Dye the " + weapon.getName() + " in the colours you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -7998,28 +7998,28 @@ public class InventoryDialogue {
 														+ "</b> dye-brush" + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.DYE_BRUSH)) == 1 ? "" : "es") + " left!"
 												:"You have <b>0</b> dye-brushes left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
 											+ "Thanks to your proficiency with [style.boldEarth(Earth spells)], you are able to dye the " + weapon.getName() + " without needing to use a dye-brush!"
 										+ "</p>");
 						}
-						
-						
+
+
 
 						owner.unequipWeaponIntoVoid(weaponSlot, weapon, true);
 						AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
 						modifiedWeapon.setPrimaryColour(dyePreviewPrimary);
 						modifiedWeapon.setSecondaryColour(dyePreviewSecondary);
 						modifiedWeapon.setTertiaryColour(dyePreviewTertiary);
-						
+
 						if(weaponSlot==InventorySlot.WEAPON_MAIN_1
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_2
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_3) {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
 							owner.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
-							
+
 						} else {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
 							owner.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
@@ -8036,15 +8036,15 @@ public class InventoryDialogue {
 						&& !Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					return new Response("Reforge",
 							"You do not have a reforging hammer, so cannot change the damage type of the " + weapon.getName() + "...",
-							null); 
+							null);
 				}
-				
+
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Reforge",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Reforge",
 						"Reforge the " + weapon.getName() + " into the damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -8068,7 +8068,7 @@ public class InventoryDialogue {
 														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -8079,18 +8079,18 @@ public class InventoryDialogue {
 						owner.unequipWeaponIntoVoid(weaponSlot, weapon, true);
 						AbstractWeapon modifiedWeapon = AbstractWeaponType.generateWeapon(weapon);
 						modifiedWeapon.setDamageType(damageTypePreview);
-						
+
 						if(weaponSlot==InventorySlot.WEAPON_MAIN_1
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_2
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_3) {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
 							owner.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
-							
+
 						} else {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
 							owner.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
 						}
-						
+
 						Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "Reforged", weapon.getDisplayName(true)), false);
 					}
 				};
@@ -8100,23 +8100,23 @@ public class InventoryDialogue {
 						&& !Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)) {
 					return new Response("Dye & reforge",
 							"You do not have both a dye brush and a reforging hammer, so cannot dye and reforge the " + weapon.getName() + "...",
-							null); 
+							null);
 				}
-				
+
 				if(damageTypePreview == weapon.getDamageType()) {
 					return new Response("Dye & reforge",
 							"You need to choose a different damage type before being able to reforge the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				if(dyePreviewPrimary == weapon.getPrimaryColour()
 						&& dyePreviewSecondary == weapon.getSecondaryColour()
 						&& dyePreviewTertiary == weapon.getTertiaryColour()) {
 					return new Response("Dye & reforge",
 							"You need to choose different colours before being able to dye the " + weapon.getName() + "!",
-							null); 
+							null);
 				}
-				
+
 				return new Response("Dye & reforge",
 						"Dye and reforge the " + weapon.getName() + " into the colours and damage type you have chosen."
 								+ (Main.game.getPlayer().isSpellSchoolSpecialAbilityUnlocked(SpellSchool.EARTH)
@@ -8149,7 +8149,7 @@ public class InventoryDialogue {
 														+ "</b> reforging " + (Main.game.getPlayer().getAllItemsInInventory().get(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER)) == 1 ? "hammer" : "hammers") + " left!"
 												:"You have <b>0</b> reforging hammers left!")
 									+ "</p>");
-							
+
 						} else {
 							Main.game.getTextEndStringBuilder().append(
 									"<p>"
@@ -8162,18 +8162,18 @@ public class InventoryDialogue {
 						modifiedWeapon.setPrimaryColour(dyePreviewPrimary);
 						modifiedWeapon.setSecondaryColour(dyePreviewSecondary);
 						modifiedWeapon.setDamageType(damageTypePreview);
-						
+
 						if(weaponSlot==InventorySlot.WEAPON_MAIN_1
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_2
 								|| weaponSlot==InventorySlot.WEAPON_MAIN_3) {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
 							owner.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
-							
+
 						} else {
 							// For some reason, if you add the modifiedWeapon directly, it won't stack with other identical weapons... Have to generateWeapon(modifiedWeapon) again to get it to start stacking properly:
 							owner.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(modifiedWeapon));
 						}
-						
+
 //						weapon.setDamageType(damageTypePreview);
 //						weapon.setPrimaryColour(dyePreviewPrimary);
 //						weapon.setSecondaryColour(dyePreviewSecondary);
@@ -8191,11 +8191,11 @@ public class InventoryDialogue {
 			return DialogueNodeType.INVENTORY;
 		}
 	};
-	
-	
-	
+
+
+
 	// Utility methods:
-	
+
 	private static String getItemDisplayPanel(String SVGString, String title, String description) {
 		return "<div class='inventoryImage'>"
 					+ "<div class='inventoryImage-content'>"
@@ -8207,7 +8207,7 @@ public class InventoryDialogue {
 					+ description
 				+ "</p>";
 	}
-	
+
 	private static String getGeneralResponseTabTitle(int index) {
 		if(index==0) {
 			return "Overview";
@@ -8217,7 +8217,7 @@ public class InventoryDialogue {
 			return null;
 		}
 	}
-	
+
 	private static Response getCloseInventoryResponse() {
 		if(interactionType == InventoryInteraction.CHARACTER_CREATION) {
 			return new Response("Back", "Return to looking in the mirror at your appearance.", CharacterCreation.CHOOSE_ADVANCED_APPEARANCE){
@@ -8232,7 +8232,7 @@ public class InventoryDialogue {
 					weapon = null;
 				}
 			};
-			
+
 		} else {
 			return new ResponseEffectsOnly("Close Inventory", "Close the Inventory menu."){
 				@Override
@@ -8245,7 +8245,7 @@ public class InventoryDialogue {
 			};
 		}
 	}
-	
+
 	private static Response getBuybackResponse() {
 		if (buyback) {
 			return new Response("Normal trade", "Switch back to the normal trade menu.", INVENTORY_MENU){
@@ -8263,27 +8263,27 @@ public class InventoryDialogue {
 			};
 		}
 	}
-	
+
 	private static Response getQuickTradeResponse() { //TODO move this into options
-		
+
 		return null;
-		
+
 //		if (Main.game.getDialogueFlags().quickTrade) {
 //			return new Response("Quick-Manage: <b style='color:" + Colour.GENERIC_GOOD.toWebHexString() + ";'>ON</b>",
 //					"Quick-Manage is turned <b style='color:" + Colour.GENERIC_GOOD.toWebHexString() + ";'>ON</b>!<br/>"
 //							+ "That means you can buy and sell items with a single click when trading, and pick-up and drop items with a single click when in normal inventory mode.", INVENTORY_MENU){
-//				
+//
 //				@Override
 //				public DialogueNodeOld getNextDialogue() {
 //					return Main.game.getCurrentDialogueNode();
 //				}
-//				
+//
 //				@Override
 //				public void effects(){
 //					Main.game.getDialogueFlags().quickTrade = !Main.game.getDialogueFlags().quickTrade;
 //				}
 //			};
-//			
+//
 //		} else {
 //			return new Response("Quick-Manage: <b style='color:" + Colour.TEXT_GREY.toWebHexString() + ";'>OFF</b>",
 //					"Quick-Manage is turned <b style='color:" + Colour.TEXT_GREY.toWebHexString() + ";'>OFF</b>.<br/>"
@@ -8293,7 +8293,7 @@ public class InventoryDialogue {
 //				public DialogueNodeOld getNextDialogue() {
 //					return Main.game.getCurrentDialogueNode();
 //				}
-//				
+//
 //				@Override
 //				public void effects(){
 //					Main.game.getDialogueFlags().quickTrade = !Main.game.getDialogueFlags().quickTrade;
@@ -8301,7 +8301,7 @@ public class InventoryDialogue {
 //			};
 //		}
 	}
-	
+
 	private static Response getJinxRemovalBlockedResponse() {
 		if(!Main.game.getPlayer().isQuestCompleted(QuestLine.SIDE_ENCHANTMENT_DISCOVERY)) {
 			return new Response("Unjinx", "You don't know how to remove jinxes! Perhaps you should pay Lilaya a visit and ask her about it...", null);
@@ -8320,11 +8320,11 @@ public class InventoryDialogue {
 		}
 		return null;
 	}
-	
-	
-	
+
+
+
 	// Items:
-	
+
 	private static void transferItems(GameCharacter from, GameCharacter to, AbstractItem item, int count) {
 		if (!to.isInventoryFull() || to.hasItem(item) || item.getRarity()==Rarity.QUEST) {
 			from.removeItem(item, count);
@@ -8332,33 +8332,33 @@ public class InventoryDialogue {
 		}
 		resetPostAction();
 	}
-	
+
 	private static void dropItems(GameCharacter from, AbstractItem item, int count) {
 		if (!Main.game.getPlayerCell().getInventory().isInventoryFull() || Main.game.getPlayerCell().getInventory().hasItem(item)) {
 			from.dropItem(item, count, from.isPlayer());
 		}
 		resetPostAction();
 	}
-	
+
 	private static void pickUpItems(GameCharacter to, AbstractItem item, int count) {
 		if (!to.isInventoryFull() || to.hasItem(item) || item.getRarity()==Rarity.QUEST) {
 			to.addItem(item, count, true, to.isPlayer());
 		}
 		resetPostAction();
 	}
-	
+
 	private static void sellItems(GameCharacter from, GameCharacter to, AbstractItem item, int count, int itemPrice) {
 		if (!to.isPlayer() || !to.isInventoryFull() || to.hasItem(item) || item.getRarity()==Rarity.QUEST) {
 			from.incrementMoney(itemPrice*count);
 			to.incrementMoney(-itemPrice*count);
-			
+
 			if(buyback && to.isPlayer()) {
 				Main.game.getPlayer().addItem(item, count, false, true);
 				Main.game.getPlayer().getBuybackStack().get(buyBackIndex).incrementCount(-count);
-				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {	
+				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {
 					Main.game.getPlayer().getBuybackStack().remove(buyBackIndex);
 				}
-				
+
 			} else {
 				if(from.isPlayer()) {
 					Main.game.getPlayer().getBuybackStack().push(new ShopTransaction(item, itemPrice, count));
@@ -8367,7 +8367,7 @@ public class InventoryDialogue {
 				}
 				from.removeItem(item, count);
 			}
-			
+
 			if(from.isPlayer()) {
 				Main.game.addEvent(
 						new EventLogEntry(
@@ -8376,7 +8376,7 @@ public class InventoryDialogue {
 								count+"x <span style='color:"+item.getRarity().getColour().toWebHexString()+";'>"+(count==1?item.getName():item.getNamePlural())+"</span> for "+UtilText.formatAsMoney(itemPrice*count)),
 						false);
 			}
-			
+
 			if(to.isPlayer()) {
 				((NPC) from).handleSellingEffects(item, count, itemPrice);
 				Main.game.addEvent(
@@ -8389,10 +8389,10 @@ public class InventoryDialogue {
 		}
 		resetPostAction();
 	}
-	
-	
+
+
 	// Weapons:
-	
+
 	private static void transferWeapons(GameCharacter from, GameCharacter to, AbstractWeapon weapon, int count) {
 		if (!to.isInventoryFull() || to.hasWeapon(weapon) || weapon.getRarity()==Rarity.QUEST) {
 			from.removeWeapon(weapon, count);
@@ -8400,34 +8400,34 @@ public class InventoryDialogue {
 		}
 		resetPostAction();
 	}
-	
+
 	private static void dropWeapons(GameCharacter from, AbstractWeapon weapon, int count) {
 		if (!Main.game.getPlayerCell().getInventory().isInventoryFull() || Main.game.getPlayerCell().getInventory().hasWeapon(weapon)) {
 			from.dropWeapon(weapon, count, from.isPlayer());
 		}
 		resetPostAction();
 	}
-	
+
 	private static void pickUpWeapons(GameCharacter to, AbstractWeapon weapon, int count) {
 		if (!to.isInventoryFull() || to.hasWeapon(weapon) || weapon.getRarity()==Rarity.QUEST) {
 			to.addWeapon(weapon, count, true, to.isPlayer());
 		}
 		resetPostAction();
 	}
-	
+
 	private static void sellWeapons(GameCharacter from, GameCharacter to, AbstractWeapon weapon, int count, int itemPrice) {
 		if (!to.isPlayer() || !to.isInventoryFull() || to.hasWeapon(weapon) || weapon.getRarity()==Rarity.QUEST) {
 
 			from.incrementMoney(itemPrice*count);
 			to.incrementMoney(-itemPrice*count);
-			
+
 			if(buyback && to.isPlayer()) {
 				Main.game.getPlayer().addWeapon(AbstractWeaponType.generateWeapon(weapon), count, false, true);
 				Main.game.getPlayer().getBuybackStack().get(buyBackIndex).incrementCount(-count);
-				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {	
+				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {
 					Main.game.getPlayer().getBuybackStack().remove(buyBackIndex);
 				}
-				
+
 			} else {
 				if(from.isPlayer()) {
 					Main.game.getPlayer().getBuybackStack().push(new ShopTransaction(weapon, itemPrice, count));
@@ -8436,7 +8436,7 @@ public class InventoryDialogue {
 				}
 				from.removeWeapon(weapon, count);
 			}
-			
+
 			if(from.isPlayer()) {
 				Main.game.addEvent(
 						new EventLogEntry(
@@ -8445,7 +8445,7 @@ public class InventoryDialogue {
 								count+"x <span style='color:"+weapon.getRarity().getColour().toWebHexString()+";'>"+(count==1?weapon.getName():weapon.getNamePlural())+"</span> for "+UtilText.formatAsMoney(itemPrice*count)),
 						false);
 			}
-			
+
 			if(to.isPlayer()) {
 				((NPC) from).handleSellingEffects(weapon, count, itemPrice);
 				Main.game.addEvent(
@@ -8458,10 +8458,10 @@ public class InventoryDialogue {
 		}
 		resetPostAction();
 	}
-	
-	
+
+
 	// Clothing:
-	
+
 	private static void transferClothing(GameCharacter from, GameCharacter to, AbstractClothing clothing, int count) {
 		if (!to.isInventoryFull() || to.hasClothing(clothing) || clothing.getRarity()==Rarity.QUEST) {
 			from.removeClothing(clothing, count);
@@ -8470,41 +8470,41 @@ public class InventoryDialogue {
 		}
 		resetPostAction();
 	}
-	
-	
+
+
 	private static void dropClothing(GameCharacter from, AbstractClothing clothing, int count) {
 		if (!Main.game.getPlayerCell().getInventory().isInventoryFull() || Main.game.getPlayerCell().getInventory().hasClothing(clothing)) {
 			from.dropClothing(clothing, count, from.isPlayer());
-			
+
 			if(from.getClothingCount(clothing) == 0) {
 				owner = null;
 			}
 		}
 		resetPostAction();
 	}
-	
+
 	private static void pickUpClothing(GameCharacter to, AbstractClothing clothing, int count) {
 		if (!to.isInventoryFull() || to.hasClothing(clothing) || clothing.getRarity()==Rarity.QUEST) {
 			to.addClothing(clothing, count, true, to.isPlayer());
-			
+
 			owner = to;
 		}
 		resetPostAction();
 	}
-	
+
 	private static void sellClothing(GameCharacter from, GameCharacter to, AbstractClothing clothing, int count, int itemPrice) {
 		if (!to.isPlayer() || !to.isInventoryFull() || to.hasClothing(clothing) || clothing.getRarity()==Rarity.QUEST) {
 
 			from.incrementMoney(itemPrice*count);
 			to.incrementMoney(-itemPrice*count);
-			
+
 			if(buyback && to.isPlayer()) {
 				Main.game.getPlayer().addClothing(new AbstractClothing(clothing) {}, count, false, true);
 				Main.game.getPlayer().getBuybackStack().get(buyBackIndex).incrementCount(-count);
-				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {	
+				if(Main.game.getPlayer().getBuybackStack().get(buyBackIndex).getCount()<=0) {
 					Main.game.getPlayer().getBuybackStack().remove(buyBackIndex);
 				}
-				
+
 			} else {
 				if(from.isPlayer()) {
 					Main.game.getPlayer().getBuybackStack().push(new ShopTransaction(clothing, itemPrice, count));
@@ -8513,7 +8513,7 @@ public class InventoryDialogue {
 				}
 				from.removeClothing(clothing, count);
 			}
-			
+
 			if(from.isPlayer()) {
 				Main.game.addEvent(
 						new EventLogEntry(
@@ -8522,7 +8522,7 @@ public class InventoryDialogue {
 								count+"x <span style='color:"+clothing.getRarity().getColour().toWebHexString()+";'>"+(count==1?clothing.getName():clothing.getNamePlural())+"</span> for "+UtilText.formatAsMoney(itemPrice*count)),
 						false);
 			}
-			
+
 			if(to.isPlayer()) {
 				((NPC) from).handleSellingEffects(clothing, count, itemPrice);
 				Main.game.addEvent(
@@ -8535,7 +8535,7 @@ public class InventoryDialogue {
 		}
 		resetPostAction();
 	}
-	
+
 	private static String unequipClothingToFloor(GameCharacter unequipper, AbstractClothing clothing) {
 		String unequipDescription = "";
 		if(clothing.getClothingType().isDiscardedOnUnequip(clothing.getSlotEquippedTo())) {
@@ -8545,10 +8545,10 @@ public class InventoryDialogue {
 		}
 		owner = null;
 		resetPostAction();
-		
+
 		return unequipDescription;
 	}
-	
+
 	private static String unequipClothingToUnequippersInventory(GameCharacter unequipper, AbstractClothing clothing) {
 		String unequipDescription = "";
 		if(clothing.getClothingType().isDiscardedOnUnequip(clothing.getSlotEquippedTo())) {
@@ -8557,10 +8557,10 @@ public class InventoryDialogue {
 			unequipDescription = owner.unequipClothingIntoUnequippersInventory(clothing, true, unequipper);
 		}
 		resetPostAction();
-		
+
 		return unequipDescription;
 	}
-	
+
 	private static String unequipClothingToInventory(GameCharacter unequipper, AbstractClothing clothing) {
 		String unequipDescription = "";
 		if(clothing.getClothingType().isDiscardedOnUnequip(clothing.getSlotEquippedTo())) {
@@ -8569,23 +8569,23 @@ public class InventoryDialogue {
 			unequipDescription = owner.unequipClothingIntoInventory(clothing, true, unequipper);
 		}
 		resetPostAction();
-		
+
 		return unequipDescription;
 	}
-	
+
 	private static String equipClothingFromInventory(GameCharacter to, InventorySlot slot, GameCharacter equipper, AbstractClothing clothing) {
 		String equipDescription = to.equipClothingFromInventory(clothing, slot, true, equipper, owner);
 		owner = to;
 		resetPostAction();
 		return equipDescription;
 	}
-	
+
 	private static String equipClothingFromGround(GameCharacter to, InventorySlot slot, GameCharacter equipper, AbstractClothing clothing) {
 		owner = to;
 		resetPostAction();
 		return to.equipClothingFromGround(clothing, slot, true, equipper);
 	}
-	
+
 	private static Response getCondomSabotageResponse(AbstractClothing clothing) {
 		if(clothing.getCondomEffect().getPotency().isNegative()) {
 			if(Main.game.getPlayer().getEssenceCount(TFEssence.ARCANE) >= 1) {
@@ -8607,20 +8607,20 @@ public class InventoryDialogue {
 						c.setName(c.getClothingType().getName());
 						setClothing(c);
 						Main.game.getPlayer().addClothing(c, false);
-						
+
 						RenderingEngine.setPage(Main.game.getPlayer(), c);
 					}
 				};
 			} else {
 				return new Response("Repair (<i>1 Essence</i>)", "You need at least 1 arcane essence in order to repair the condom!", null);
 			}
-			
+
 		} else {
 			return new Response("Sabotage", "By making a small tear in the end of this condom, you can ensure that it will break at the moment of orgasm!", CLOTHING_INVENTORY) {
 				@Override
 				public void effects(){
 					AbstractClothing c = (AbstractClothing) EnchantmentDialogue.craftItem(clothing, Util.newArrayListOfValues(new ItemEffect(ItemEffectType.CLOTHING, TFModifier.CLOTHING_CONDOM, TFModifier.ARCANE_BOOST, TFPotency.MAJOR_DRAIN, 0)));
-					
+
 					Main.game.getPlayer().removeClothing(c);
 					c.setName(c.getClothingType().getName());
 					setClothing(c);
@@ -8638,12 +8638,12 @@ public class InventoryDialogue {
 			};
 		}
 	}
-	
+
 	private static void resetPostAction() {
 		Main.game.setResponseTab(0);
 		resetItems();
 	}
-	
+
 	private static void resetItems() {
 		item = null;
 		clothing = null;
