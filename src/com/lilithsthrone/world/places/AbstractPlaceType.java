@@ -1,5 +1,5 @@
 package com.lilithsthrone.world.places;
-import java.io.IOException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,18 +41,18 @@ public class AbstractPlaceType {
 	protected boolean globalMapTile;
 	protected boolean dangerous;
 	protected boolean itemsDisappear;
-	
+
 	protected TeleportPermissions teleportPermissions;
-	
+
 	protected List<Weather> weatherImmunities;
 	protected static List<Weather> allWeatherImmunities = new ArrayList<>(Arrays.asList(Weather.values()));
-	
+
 	protected String virginityLossDescription;
 
-	protected static Map<String, String> SVGOverrides = new HashMap<>(); 
-	
+	protected static Map<String, String> SVGOverrides = new HashMap<>();
+
 	protected static int colourReplacementId = 0;
-	
+
 	public AbstractPlaceType(String name,
 			String tooltipDescription,
 			String SVGPath,
@@ -60,7 +60,7 @@ public class AbstractPlaceType {
 			DialogueNode dialogue,
 			Encounter encounterType,
 			String virginityLossDescription) {
-		
+
 		this.name = name;
 		this.tooltipDescription = tooltipDescription;
 		this.colour = colour;
@@ -69,7 +69,7 @@ public class AbstractPlaceType {
 		}
 
 		this.backgroundColour = Colour.MAP_BACKGROUND;
-		
+
 		this.dialogue = dialogue;
 		this.encounterType = encounterType;
 		this.weatherImmunities = new ArrayList<>();
@@ -79,7 +79,7 @@ public class AbstractPlaceType {
 		this.itemsDisappear = true;
 		this.globalMapTile = false;
 		this.teleportPermissions = TeleportPermissions.BOTH;
-		
+
 		if(SVGPath!=null) {
 			try {
 				InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/map/" + SVGPath + ".svg");
@@ -87,18 +87,18 @@ public class AbstractPlaceType {
 					System.err.println("Error! PlaceType icon file does not exist (Trying to read from '"+SVGPath+"')! (Code 1)");
 				}
 				String s = Util.inputStreamToString(is);
-				
+
 				try {
 					s = SvgUtil.colourReplacement("placeColour"+colourReplacementId, colour, s);
 					colourReplacementId++;
 				} catch(Exception ex) {
 					System.err.println(SVGPath+" error!");
 				}
-				
+
 				SVGString = s;
-	
+
 				is.close();
-	
+
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -106,7 +106,7 @@ public class AbstractPlaceType {
 			SVGString = null;
 		}
 	}
-	
+
 	public AbstractPlaceType initDangerous() {
 		this.dangerous = true;
 		if(backgroundColour==Colour.MAP_BACKGROUND) {
@@ -114,17 +114,17 @@ public class AbstractPlaceType {
 		}
 		return this;
 	}
-	
+
 	public AbstractPlaceType initItemsPersistInTile() {
 		this.itemsDisappear = false;
 		return this;
 	}
-	
+
 	public AbstractPlaceType initMapBackgroundColour(Colour backgroundColour) {
 		this.backgroundColour = backgroundColour;
 		return this;
 	}
-	
+
 	/**
 	 * Sets weather immunity to all Weather values.
 	 */
@@ -149,7 +149,7 @@ public class AbstractPlaceType {
 		this.teleportPermissions = teleportPermissions;
 		return this;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -174,7 +174,7 @@ public class AbstractPlaceType {
 		}
 		return backgroundColour;
 	}
-	
+
 	public String getBackgroundColourString() {
 		if(backgroundColourString!=null) {
 			return backgroundColourString;
@@ -189,7 +189,7 @@ public class AbstractPlaceType {
 	public DialogueNode getDialogue(boolean withRandomEncounter) {
 		return getDialogue(withRandomEncounter, false);
 	}
-	
+
 	public DialogueNode getDialogue(boolean withRandomEncounter, boolean forceEncounter) {
 		if(getEncounterType()!=null && withRandomEncounter) {
 			DialogueNode dn = getEncounterType().getRandomEncounter(forceEncounter);
@@ -200,19 +200,27 @@ public class AbstractPlaceType {
 
 		return dialogue;
 	}
+
 	
-	public Population getPopulation() {
-		return null;
+	public List<Population> getPopulation() {
+		return new ArrayList<>();
 	}
-	
+
 	public boolean isPopulated() {
-		return getPopulation()!=null && !getPopulation().getSpecies().isEmpty();
+		if(getPopulation()!=null) {
+			for(Population pop : getPopulation()) {
+				if(!pop.getSpecies().isEmpty()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public boolean isLand() {
 		return true;
 	}
-	
+
 	public boolean isDangerous() {
 		return dangerous;
 	}
@@ -220,11 +228,11 @@ public class AbstractPlaceType {
 	public boolean isStormImmune() {
 		return weatherImmunities.contains(Weather.MAGIC_STORM);
 	}
-	
+
 	public boolean isItemsDisappear() {
 		return itemsDisappear;
 	}
-	
+
 	protected static String getSVGOverride(String pathName, Colour colour) {
 		if(!SVGOverrides.keySet().contains(pathName+colour)) {
 			try {
@@ -233,7 +241,7 @@ public class AbstractPlaceType {
 					System.err.println("Error! PlaceType icon file does not exist (Trying to read from '"+pathName+"')! (Code 2)");
 				}
 				String s = Util.inputStreamToString(is);
-				
+
 
 				try {
 					s = SvgUtil.colourReplacement("placeColour"+colourReplacementId, colour, s);
@@ -241,59 +249,59 @@ public class AbstractPlaceType {
 				} catch(Exception ex) {
 					System.err.println(pathName+" error!");
 				}
-				
+
 				SVGOverrides.put(pathName+colour, s);
-	
+
 				is.close();
-	
+
 			} catch (Exception e1) {
 				System.err.println("Eeeeeek! PlaceType.getSVGOverride()");
 				e1.printStackTrace();
 				return "";
 			}
 		}
-		
+
 		return SVGOverrides.get(pathName+colour);
 	}
-	
+
 	public String getSVGString(Set<PlaceUpgrade> upgrades) {
 		return SVGString;
 	}
-	
+
 	public void applyInventoryInit(CharacterInventory inventory) {
-		
+
 	}
-	
+
 	// For determining where this place should be placed:
-	
+
 	public Bearing getBearing() {
 		return null;
 	}
-	
+
 	public WorldType getParentWorldType() {
 		return null;
 	}
-	
+
 	public AbstractPlaceType getParentPlaceType() {
 		return null;
 	}
-	
+
 	public EntranceType getParentAlignment() {
 		return null;
 	}
-	
+
 	public String getPlaceNameAppendFormat(int count) {
 		return "";
 	}
-	
+
 	public boolean isAbleToBeUpgraded() {
 		return false;
 	}
-	
+
 	public ArrayList<PlaceUpgrade> getStartingPlaceUpgrades() {
 		return new ArrayList<>();
 	}
-	
+
 	public ArrayList<PlaceUpgrade> getAvailablePlaceUpgrades(Set<PlaceUpgrade> upgrades) {
 		return new ArrayList<>();
 	}
@@ -301,45 +309,45 @@ public class AbstractPlaceType {
 	public static ArrayList<PlaceUpgrade> getAvailableLilayaRoomPlaceUpgrades(Set<PlaceUpgrade> upgrades) {
 		if(upgrades.contains(PlaceUpgrade.LILAYA_GUEST_ROOM)) {
 			return PlaceUpgrade.getGuestRoomUpgrades();
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_SLAVE_ROOM)) {
 			return PlaceUpgrade.getSlaveQuartersUpgradesSingle();
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_SLAVE_ROOM_DOUBLE)) {
 			return PlaceUpgrade.getSlaveQuartersUpgradesDouble();
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_SLAVE_ROOM_QUADRUPLE)) {
 			return PlaceUpgrade.getSlaveQuartersUpgradesQuadruple();
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_MILKING_ROOM)) {
 			return PlaceUpgrade.getMilkingUpgrades();
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_OFFICE)) {
 			return PlaceUpgrade.getOfficeUpgrades();
 		}
-		
+
 		return PlaceUpgrade.getCoreRoomUpgrades();
 	}
-	
+
 	public String getLilayaRoomSVGString(Set<PlaceUpgrade> upgrades) {
 		if(upgrades.contains(PlaceUpgrade.LILAYA_GUEST_ROOM)) {
 			return getSVGOverride("dominion/lilayasHome/roomGuest", Colour.BASE_GREEN_LIGHT);
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_SLAVE_ROOM)) {
 			return getSVGOverride("dominion/lilayasHome/roomSlave", Colour.BASE_CRIMSON);
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_MILKING_ROOM)) {
 			return getSVGOverride("dominion/lilayasHome/roomMilking", Colour.BASE_YELLOW_LIGHT);
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_OFFICE)) {
 			return getSVGOverride("dominion/lilayasHome/roomOffice", Colour.BASE_LILAC);
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_SLAVE_ROOM_DOUBLE)) {
 			return getSVGOverride("dominion/lilayasHome/roomSlaveDouble", Colour.BASE_MAGENTA);
-			
+
 		} else if(upgrades.contains(PlaceUpgrade.LILAYA_SLAVE_ROOM_QUADRUPLE)) {
 			return getSVGOverride("dominion/lilayasHome/roomSlaveQuadruple", Colour.BASE_MAGENTA);
-			
+
 		} else {
 			return SVGString;
 		}
