@@ -1,5 +1,5 @@
 package com.lilithsthrone.game;
-import java.io.File;
+import java.io.File;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -200,73 +200,73 @@ public class Game implements XMLSaving {
 	public static final int FONT_SIZE_NORMAL = 18;
 	public static final int FONT_SIZE_LARGE = 24;
 	public static final int FONT_SIZE_HUGE = 36;
-	
+
 	public static final int TIME_SKIP_YEARS = 3;
 	public static final int TIME_START_SECONDS = (20*60 + 34)*60;
 
 	public static final double DOMINION_LONGITUDE = 0;
 	public static final double DOMINION_LATITUDE = 51.4934;
-	
-	
+
+
 	public static String loadingVersion = Main.VERSION_NUMBER;
-	
+
 	private PlayerCharacter player;
-	
+
 	// NPCs:
 	private NPC activeNPC;
 	private AtomicInteger npcTally = new AtomicInteger(0);
 
 	//Note : this is a ConcurrentHashMap
 	private Map<String, NPC> NPCMap;
-	
+
 	private Map<WorldType, World> worlds;
 	private long lastAutoSaveTime = 0;
 	private long secondsPassed; // Seconds passed since the start of the game
 	private LocalDateTime startingDate;
-	
+
 	private boolean renderAttributesSection;
 	private boolean renderMap;
 	private boolean inCombat;
 	private boolean inSex;
 	private boolean requestAutosave;
-	
+
 	private Weather currentWeather;
 	private long nextStormTimeInSeconds;
 	private int gatheringStormDurationInSeconds;
 	private int weatherTimeRemainingInSeconds;
-	
+
 	private Encounter currentEncounter;
-	
+
 	private boolean started;
-	
+
 	private DialogueFlags dialogueFlags;
-	
+
 	private static Map<String, CharacterInventory> savedInventories; // Map of ID to inventory
-	
+
 	// Responses:
 	private int responsePointer = 0;
-	
+
 	// Dialogues:
 	private DialogueNode currentDialogueNode;
 	private DialogueNode savedDialogueNode = null;
-	
+
 	private String currentDialogue;
 	private String savedDialogue;
 	private String previousPastDialogueSBContents = "";
-	
+
 	private int initialPositionAnchor = 0;
 	private int responsePage = 0;
 	private int responseTab = 0;
-	
+
 	private StringBuilder pastDialogueSB = new StringBuilder();
 	private StringBuilder choicesDialogueSB = new StringBuilder();
 	private StringBuilder textEndStringBuilder = new StringBuilder();
 	private StringBuilder textStartStringBuilder = new StringBuilder();
-	
+
 	// Logs:
 	private List<EventLogEntry> eventLog = new ArrayList<>();
 	private SizedStack<Value<Integer, List<SlaveryEventLogEntry>>> slaveryEventLog = new SizedStack<>(7);
-	
+
 	// Slavery:
 	private OccupancyUtil occupancyUtil = new OccupancyUtil();
 
@@ -288,20 +288,20 @@ public class Game implements XMLSaving {
 		started = false;
 
 		NPCMap = new ConcurrentHashMap<>();
-		
+
 		savedInventories = new HashMap<>();
-		
+
 		// Start in clouds:
 		currentWeather = Weather.CLOUD;
 		weatherTimeRemainingInSeconds = 5*60*60;
 		nextStormTimeInSeconds = getSecondsPassed() + (((60*48) + (60*Util.random.nextInt(24)))*60); // Next storm in 2-3 days
-		
+
 		UtilText.resetParsingEngine();
 	}
-	
+
 	private static boolean timeLog = false;
 	private static long timeStart = 0;
-	
+
 	public static void exportCharacter(GameCharacter character) {
 		try {
 			if(timeLog) {
@@ -309,54 +309,54 @@ public class Game implements XMLSaving {
 				System.out.println(timeStart);
 			}
 			// Starting stuff:
-			
+
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
+
 			Document doc = docBuilder.newDocument();
-			
+
 
 			// Writing game stuff to export:
-			
+
 			Element characterNode = doc.createElement("exportedCharacter");
 			doc.appendChild(characterNode);
-			
+
 			character.saveAsXML(characterNode, doc);
-			
+
 			// Ending stuff:
-			
+
 			TransformerFactory tf = TransformerFactory.newInstance();
 			Transformer transformer1 = tf.newTransformer();
 			transformer1.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			StringWriter writer = new StringWriter();
 
 			transformer1.transform(new DOMSource(doc), new StreamResult(writer));
-			
+
 			// Save this xml:
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 			DOMSource source = new DOMSource(doc);
-			
+
 			File dir = new File("data/");
 			dir.mkdir();
-			
+
 			File dirCharacter = new File("data/characters/");
 			dirCharacter.mkdir();
-			
+
 			int saveNumber = 0;
 			String saveLocation = "data/characters/exported_"+character.getName(false)+"_day"+Main.game.getDayNumber()+".xml";
 			if(new File("data/characters/exported_"+character.getName(false)+"_day"+Main.game.getDayNumber()+".xml").exists()) {
 				saveLocation = "data/characters/exported_"+character.getName(false)+"_day"+Main.game.getDayNumber()+"("+saveNumber+").xml";
 			}
-			
+
 			while(new File("data/characters/exported_"+character.getName(false)+"_day"+Main.game.getDayNumber()+"("+saveNumber+").xml").exists()) {
 				saveNumber++;
 				saveLocation = "data/characters/exported_"+character.getName(false)+"_day"+Main.game.getDayNumber()+"("+saveNumber+").xml";
 			}
 			StreamResult result = new StreamResult(saveLocation);
-			
+
 			transformer.transform(source, result);
 
 			if(timeLog) {
@@ -368,24 +368,24 @@ public class Game implements XMLSaving {
 			tfe.printStackTrace();
 		}
 	}
-	
+
 	public static GameCharacter importCharacterAsSlave(String name) {
 		File file = new File("data/characters/"+name+".xml");
-		
+
 		if (file.exists()) {
 			try {
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = dBuilder.parse(file);
-				
+
 				// Cast magic:
 				doc.getDocumentElement().normalize();
-				
+
 				Element characterElement = (Element) doc.getElementsByTagName("exportedCharacter").item(0);
 				if(characterElement == null) {
 					characterElement = (Element) doc.getElementsByTagName("playerCharacter").item(0);
 				}
-				
+
 				// Load NPCs:
 				SlaveImport importedSlave = new SlaveImport();
 				importedSlave.loadFromXML(characterElement, doc,
@@ -400,23 +400,23 @@ public class Game implements XMLSaving {
 						CharacterImportSetting.REMOVE_RACE_CONCEALED);
 				Main.game.addNPC(importedSlave, false);
 				importedSlave.applyNewlyImportedSlaveVariables();
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public static void exportGame(String exportFileName, boolean allowOverwrite) {
-		
+
 		File dir = new File("data/");
 		dir.mkdir();
 
 		dir = new File("data/saves");
 		dir.mkdir();
-		
+
 		boolean overwrite = false;
 		if (dir.isDirectory()) {
 			File[] directoryListing = dir.listFiles((path, filename) -> filename.endsWith(".xml"));
@@ -433,25 +433,25 @@ public class Game implements XMLSaving {
 				}
 			}
 		}
-		
+
 		try {
 			if(timeLog) {
 				timeStart = System.nanoTime();
 				System.out.println(timeStart);
 			}
 			// Starting stuff:
-			
+
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
+
 			Document doc = docBuilder.newDocument();
-			
+
 
 			// Writing game stuff to export:
-			
+
 			Element game = doc.createElement("game");
 			doc.appendChild(game);
-			
+
 			try {
 				Element informationNode = doc.createElement("coreInfo");
 				game.appendChild(informationNode);
@@ -471,14 +471,14 @@ public class Game implements XMLSaving {
 					inventoryNode.appendChild(element);
 					entry.getValue().saveAsXML(element, doc);
 				}
-				
+
 				try {
 					Main.game.getOccupancyUtil().saveAsXML(game, doc);
 				}catch(Exception ex) {
 					System.err.println("SlaveryUtil saving failed!");
 					Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "SlaveryUtil failure"), false);
 				}
-				
+
 				Element dateNode = doc.createElement("date");
 				informationNode.appendChild(dateNode);
 				CharacterUtils.addAttribute(doc, dateNode, "year", String.valueOf(Main.game.startingDate.getYear()));
@@ -490,9 +490,9 @@ public class Game implements XMLSaving {
 				System.err.println("coreInfo saving failed!");
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "coreInfo failure"), false);
 			}
-			
+
 			Main.game.dialogueFlags.saveAsXML(game, doc);
-			
+
 			try {
 				Element eventLogNode = doc.createElement("eventLog");
 				game.appendChild(eventLogNode);
@@ -503,7 +503,7 @@ public class Game implements XMLSaving {
 				System.err.println("eventLog saving failed!");
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "eventLog failure"), false);
 			}
-		
+
 			try {
 				Element slaveryEventLogNode = doc.createElement("slaveryEventLog");
 				game.appendChild(slaveryEventLogNode);
@@ -519,7 +519,7 @@ public class Game implements XMLSaving {
 				System.err.println("slaveryEventLog saving failed!");
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "slaveryEventLog failure"), false);
 			}
-			
+
 			// Add maps:
 			try {
 				Element mapNode = doc.createElement("maps");
@@ -533,7 +533,7 @@ public class Game implements XMLSaving {
 				System.err.println("maps saving failed!");
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "maps failure"), false);
 			}
-			
+
 			// Add player:
 			try {
 				Element characterNode = doc.createElement("playerCharacter");
@@ -543,7 +543,7 @@ public class Game implements XMLSaving {
 				System.err.println("playerCharacter saving failed!");
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "playerCharacter failure"), false);
 			}
-		
+
 			// Add all NPCs:
 			try {
 				for(GameCharacter character : Main.game.getNPCMap().values()) {
@@ -556,29 +556,29 @@ public class Game implements XMLSaving {
 				ex.printStackTrace();
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail<b>", "NPC failure"), false);
 			}
-			
-			
+
+
 			// Ending stuff:
 			try {
 				TransformerFactory tf = TransformerFactory.newInstance();
 				Transformer transformer1 = tf.newTransformer();
 				transformer1.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 				StringWriter writer = new StringWriter();
-	
+
 				transformer1.transform(new DOMSource(doc), new StreamResult(writer));
-				
+
 				// Save this xml:
 				TransformerFactory transformerFactory = TransformerFactory.newInstance();
 				Transformer transformer = transformerFactory.newTransformer();
 				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 				DOMSource source = new DOMSource(doc);
-				
+
 				String saveLocation = "data/saves/"+exportFileName+".xml";
 				StreamResult result = new StreamResult(saveLocation);
-				
+
 				transformer.transform(source, result);
-				
+
 				if(!exportFileName.startsWith("AutoSave")) {
 					if(overwrite) {
 						Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Game saved)]", saveLocation), false);
@@ -593,7 +593,7 @@ public class Game implements XMLSaving {
 				ex.printStackTrace();
 				Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "<style='color:"+Colour.GENERIC_TERRIBLE.toWebHexString()+";'>Partial Save Fail</span>", "XML writing failure"), false);
 			}
-			
+
 			if(timeLog) {
 				System.out.println("Difference: "+(System.nanoTime()-timeStart)/1000000000f);
 			}
@@ -601,18 +601,18 @@ public class Game implements XMLSaving {
 			pce.printStackTrace();
 		}
 	}
-	
+
 	private static boolean debug = false;
 
 	public static void importGame(String name) {
 		File file = new File("data"+System.getProperty("file.separator")+"saves"+System.getProperty("file.separator"), name+".xml");
-		
+
 		importGame(file);
 	}
-	
+
 	public static void importGame(File file) {
 		Main.game = new Game();
-		
+
 		if (file.exists()) {
 			try {
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -623,20 +623,20 @@ public class Game implements XMLSaving {
 				if(debug) {
 					System.out.println("Load game start");
 				}
-				
+
 				// Cast magic:
 				doc.getDocumentElement().normalize();
-				
+
 				Element gameElement = (Element) doc.getElementsByTagName("game").item(0);
-				
+
 				Element informationNode = (Element) gameElement.getElementsByTagName("coreInfo").item(0);
-				
+
 				loadingVersion = informationNode.getAttribute("version");
 
 				if(!informationNode.getAttribute("lastAutoSaveTime").isEmpty()) {
 					Main.game.lastAutoSaveTime = Long.valueOf(informationNode.getAttribute("lastAutoSaveTime"));
 				}
-				
+
 				if(!informationNode.getAttribute("minutesPassed").isEmpty()) { // Support for before time was converted from minutes to seconds:
 					Main.game.secondsPassed = Long.valueOf(informationNode.getAttribute("minutesPassed"))*60;
 					Main.game.nextStormTimeInSeconds = Long.valueOf(informationNode.getAttribute("nextStormTime"))*60;
@@ -645,7 +645,7 @@ public class Game implements XMLSaving {
 					} catch(Exception ex) {
 					}
 					Main.game.weatherTimeRemainingInSeconds = Integer.valueOf(informationNode.getAttribute("weatherTimeRemaining"))*60;
-					
+
 				} else {
 					Main.game.secondsPassed = Long.valueOf(informationNode.getAttribute("secondsPassed"));
 					Main.game.nextStormTimeInSeconds = Long.valueOf(informationNode.getAttribute("nextStormTimeInSeconds"));
@@ -665,8 +665,8 @@ public class Game implements XMLSaving {
 					}
 				} catch(Exception ex) {
 				}
-				
-				
+
+
 				// Saved inventories:
 				//TODO test
 				Element inventoryNode = (Element) gameElement.getElementsByTagName("savedInventories").item(0);
@@ -679,9 +679,9 @@ public class Game implements XMLSaving {
 						savedInventories.put(id, inventory);
 					}
 				}
-				
+
 				// Date:
-				
+
 				Element dateNode = (Element) gameElement.getElementsByTagName("date").item(0);
 				Main.game.startingDate = LocalDateTime.of(
 						Integer.valueOf(dateNode.getAttribute("year")),
@@ -689,17 +689,17 @@ public class Game implements XMLSaving {
 						Integer.valueOf(dateNode.getAttribute("dayOfMonth")),
 						Integer.valueOf(dateNode.getAttribute("hour")),
 						Integer.valueOf(dateNode.getAttribute("minute")));
-				
+
 				Main.game.dialogueFlags = DialogueFlags.loadFromXML((Element) gameElement.getElementsByTagName("dialogueFlags").item(0), doc);
-				
+
 				NodeList eventLogEntryElements = ((Element) gameElement.getElementsByTagName("eventLog").item(0)).getElementsByTagName("eventLogEntry");
 				for(int i = 0; i < eventLogEntryElements.getLength(); i++){
 					Element e = (Element) eventLogEntryElements.item(i);
 					Main.game.eventLog.add(EventLogEntry.loadFromXML(e, doc));
 				}
 				Main.game.eventLog.sort(Comparator.comparingLong(EventLogEntry::getTime));
-				
-				
+
+
 				NodeList nodes = gameElement.getElementsByTagName("slaveryEventLog");
 				Element extraEffectNode = (Element) nodes.item(0);
 				if(extraEffectNode != null) {
@@ -709,7 +709,7 @@ public class Game implements XMLSaving {
 						int day = Integer.valueOf(e.getAttribute("value"));
 						Main.game.slaveryEventLog.push(new Value<>(day, new ArrayList<>()));
 //						System.out.println(day+": added");
-						
+
 						NodeList dayEventLogElements = e.getElementsByTagName("eventLogEntry");
 						for(int j = 0; j < dayEventLogElements.getLength(); j++){
 							Element entry = (Element) dayEventLogElements.item(j);
@@ -721,11 +721,11 @@ public class Game implements XMLSaving {
 						}
 					}
 				}
-				
+
 				if(debug) {
 					System.out.println("Core info finished: "+ (System.nanoTime()-time)/1000000000d);
 				}
-				
+
 				// Maps:
 				NodeList worlds = ((Element) gameElement.getElementsByTagName("maps").item(0)).getElementsByTagName("world");
 				for(int i = 0; i < worlds.getLength(); i++) {
@@ -753,7 +753,7 @@ public class Game implements XMLSaving {
 						Main.game.worlds.put(world.getWorldType(), world);
 					}
 				}
-				
+
 				// Add missing world types:
 				for(WorldType wt : WorldType.values()) {
 					Generation gen = new Generation();
@@ -817,13 +817,13 @@ public class Game implements XMLSaving {
 					AbstractItem spellBook = AbstractItemType.generateItem(ItemType.getSpellBookType(Spell.ICE_SHARD));
 					Main.game.getWorlds().get(WorldType.LILAYAS_HOUSE_FIRST_FLOOR).getCell(PlaceType.LILAYA_HOME_ROOM_PLAYER).getInventory().addItem(spellBook);
 				}
-				
+
 				if(debug) {
 					System.out.println("Maps finished: "+ (System.nanoTime()-time)/1000000000d);
 				}
-				
+
 				Main.game.player = PlayerCharacter.loadFromXML(null, (Element) ((Element) gameElement.getElementsByTagName("playerCharacter").item(0)), doc);
-				
+
 				if(debug) {
 					System.out.println("Player finished: "+ (System.nanoTime()-time)/1000000000d);
 				}
@@ -848,7 +848,7 @@ public class Game implements XMLSaving {
 								if(Main.isVersionOlderThan(loadingVersion, "0.3")) {
 									className = className.replace("FortressDemonLeader", "DarkSiren");
 								}
-								
+
 								if(!Main.isVersionOlderThan(loadingVersion, "0.3.5.9") || !id.contains("Helena")) {
 									if(Main.isVersionOlderThan(loadingVersion, "0.3.5.9")) {
 										className = className.replace("Alexa", "Helena");
@@ -862,7 +862,7 @@ public class Game implements XMLSaving {
 												&& npc.getClass()!=FortressFemalesLeader.class)) {
 											Main.game.safeAddNPC(npc, true);
 										}
-	
+
 										// To fix issues with older versions hair length:
 										if(Main.isVersionOlderThan(loadingVersion, "0.1.90.5")) {
 											npc.getBody().getHair().setLength(null, npc.isFeminine()?RacialBody.valueOfRace(npc.getRace()).getFemaleHairLength():RacialBody.valueOfRace(npc.getRace()).getMaleHairLength());
@@ -871,7 +871,7 @@ public class Game implements XMLSaving {
 										if(Main.isVersionOlderThan(loadingVersion, "0.1.98.5") && !npc.isUnique() && npc.getFetishDesireMap().isEmpty()) {
 											CharacterUtils.generateDesires(npc);
 										}
-	
+
 										if(Main.isVersionOlderThan(loadingVersion, "0.2.0") && npc.getFetishDesireMap().size()>10) {
 											npc.clearFetishDesires();
 											CharacterUtils.generateDesires(npc);
@@ -879,18 +879,18 @@ public class Game implements XMLSaving {
 										if(Main.isVersionOlderThan(loadingVersion, "0.3.5.4") && npc.getWorldLocation()==WorldType.GAMBLING_DEN) {
 											if(npc instanceof Roxy) {
 												npc.setLocation(WorldType.GAMBLING_DEN, PlaceType.GAMBLING_DEN_TRADER, true);
-												
+
 											} else if(npc instanceof Axel) {
 												npc.setLocation(WorldType.GAMBLING_DEN, PlaceType.GAMBLING_DEN_ENTRANCE, true);
-												
+
 											} else if(npc instanceof Epona) {
 												npc.setLocation(WorldType.GAMBLING_DEN, PlaceType.GAMBLING_DEN_PREGNANCY_ROULETTE, true);
-												
+
 											} else {
 												npc.setLocation(WorldType.GAMBLING_DEN, PlaceType.GAMBLING_DEN_GAMBLING, true);
 											}
 										}
-	
+
 									} else {
 										System.err.println("LOADNPC returned null: "+id);
 										System.err.println("CLASS: " + className);
@@ -902,41 +902,41 @@ public class Game implements XMLSaving {
 								}
 							}
 						});
-				
+
 				if(debug) {
 					System.out.println("NPCs finished: "+ (System.nanoTime()-time)/1000000000d);
 				}
 
-				
+
 				// Add in new NPCS:
 				Main.game.initUniqueNPCs();
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.2.8")) { // Fix for incorrect positioning bug in an old version:
 					Main.game.getNpc(Jules.class).setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_ENTRANCE);
 					Main.game.getNpc(Kruger.class).setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_VIP_AREA);
 					Main.game.getNpc(Kalahari.class).setLocation(WorldType.NIGHTLIFE_CLUB, PlaceType.WATERING_HOLE_BAR);
 				}
-				
+
 				// To prevent errors from previous versions, reset Zaranix progress if prior to 0.1.95:
 				if(Main.isVersionOlderThan(loadingVersion, "0.1.90.5")) {
 					if(Main.game.getPlayer().getWorldLocation() == WorldType.ZARANIX_HOUSE_GROUND_FLOOR
 							|| Main.game.getPlayer().getWorldLocation() == WorldType.ZARANIX_HOUSE_FIRST_FLOOR) {
 						Main.game.getPlayer().setLocation(WorldType.DOMINION, PlaceType.DOMINION_DEMON_HOME, false);
-						
+
 						ZaranixHomeGroundFloor.resetHouseAfterLeaving();
 						Main.game.getDialogueFlags().setFlag(DialogueFlagValue.zaranixDiscoveredHome, false);
 						Main.game.getDialogueFlags().setFlag(DialogueFlagValue.zaranixKickedDownDoor, false);
 						Main.game.getDialogueFlags().setFlag(DialogueFlagValue.zaranixKnockedOnDoor, false);
 						Main.game.getDialogueFlags().setFlag(DialogueFlagValue.zaranixMaidsHostile, false);
-						
+
 						Main.game.getNpc(Arthur.class).setLocation(WorldType.ZARANIX_HOUSE_FIRST_FLOOR, PlaceType.ZARANIX_FF_OFFICE, true);
-						
+
 						if(Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_H_THE_GREAT_ESCAPE)) {
 							Main.game.getPlayer().setQuestProgress(QuestLine.MAIN, Quest.MAIN_1_H_THE_GREAT_ESCAPE);
 						}
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.1.95")) {
 					if(Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_H_THE_GREAT_ESCAPE)) {
 						Main.game.getNpc(Arthur.class).setLocation(WorldType.LILAYAS_HOUSE_GROUND_FLOOR, PlaceType.LILAYA_HOME_LAB, true);
@@ -950,16 +950,16 @@ public class Game implements XMLSaving {
 						}
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.2.5.1")) { //Reset ass/nipple/lip colours
 					for(NPC npc : Main.game.getAllNPCs()) {
 						if(!npc.isSlave() || (npc.getOwner()!=null && !npc.getOwner().isPlayer()))
 						npc.setSkinCovering(new Covering(npc.getSkinCovering(), npc.getCovering(npc.getSkinCovering()).getPrimaryColour()), true);
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.2.5")) { //Add milking rooms
-					
+
 					Cell[][] grid = Main.game.getWorlds().get(WorldType.LILAYAS_HOUSE_GROUND_FLOOR).getCellGrid();
 					for(int i=0 ; i<grid.length ; i++) {
 						for(int j=0 ; j<grid[0].length ; j++) {
@@ -977,7 +977,7 @@ public class Game implements XMLSaving {
 						}
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.2.12.6")) { //Reset imp fortresses
 					ImpFortressDialogue.resetFortress(WorldType.IMP_FORTRESS_ALPHA);
 					ImpFortressDialogue.resetFortress(WorldType.IMP_FORTRESS_FEMALES);
@@ -986,17 +986,17 @@ public class Game implements XMLSaving {
 					Main.game.getDialogueFlags().setFlag(DialogueFlagValue.impFortressAlphaBossEncountered, false);
 					Main.game.getDialogueFlags().setFlag(DialogueFlagValue.impFortressFemalesBossEncountered, false);
 					Main.game.getDialogueFlags().setFlag(DialogueFlagValue.impFortressMalesBossEncountered, false);
-					
+
 					if(Main.game.getPlayer().getWorldLocation()==WorldType.IMP_FORTRESS_ALPHA) {
 						Main.game.getPlayer().setLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_IMP_FORTRESS_ALPHA);
-						
+
 					} else if(Main.game.getPlayer().getWorldLocation()==WorldType.IMP_FORTRESS_FEMALES) {
 						Main.game.getPlayer().setLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_IMP_FORTRESS_FEMALES);
-						
+
 					} else if(Main.game.getPlayer().getWorldLocation()==WorldType.IMP_FORTRESS_MALES) {
 						Main.game.getPlayer().setLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_IMP_FORTRESS_MALES);
 					}
-					
+
 					Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.IMP_FORTRESS_ARCANE_KEY));
 					Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.IMP_FORTRESS_ARCANE_KEY_2));
 					Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.IMP_FORTRESS_ARCANE_KEY_3));
@@ -1008,7 +1008,7 @@ public class Game implements XMLSaving {
 					}
 					ImpCitadelDialogue.resetFortress();
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.2.12.9")) {
 					for(NPC npc : Main.game.getAllNPCs()) {
 						if(Main.game.getPlayer().getFriendlyOccupants().contains(npc.getId()) && npc.getHomeWorldLocation()==WorldType.DOMINION && !npc.hasJob()) {
@@ -1045,7 +1045,7 @@ public class Game implements XMLSaving {
 						Main.game.getPlayer().removeItem(AbstractItemType.generateItem(ItemType.IMP_FORTRESS_ARCANE_KEY_3));
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.3")) {
 					if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.impFortressDemonDefeated)) {
 						Main.game.getNpc(SubmissionCitadelArcanist.class).setLocation(WorldType.EMPTY, PlaceType.GENERIC_HOLDING_CELL);
@@ -1059,7 +1059,7 @@ public class Game implements XMLSaving {
 					}
 					Main.game.getWorlds().get(WorldType.LILAYAS_HOUSE_GROUND_FLOOR).getCell(PlaceType.LILAYA_HOME_LIBRARY).getInventory().addItem(AbstractItemType.generateItem(ItemType.getLoreBook(Subspecies.HALF_DEMON)));
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.3.0.5")) {
 					if(Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_2_C_SIRENS_FALL)) {
 						ImpCitadelDialogue.clearFortress();
@@ -1069,7 +1069,7 @@ public class Game implements XMLSaving {
 						((DarkSiren)Main.game.getNpc(DarkSiren.class)).postDefeatReset();
 					}
 				}
-				
+
 				// For affection/incest gains that I missed in v0.3 & v0.3.0.5:
 				if(Main.isVersionOlderThan(loadingVersion, "0.3.0.6")) {
 					if(Main.game.getNpc(Lilaya.class).getRaceStage()==RaceStage.GREATER) {
@@ -1081,13 +1081,13 @@ public class Game implements XMLSaving {
 						Main.game.getNpc(DarkSiren.class).addFetish(Fetish.FETISH_INCEST);
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.3.1.2")
 						&& Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_C_WOLFS_DEN)
 						&& !Main.game.getNpc(Brax.class).getLocationPlace().getPlaceType().equals(PlaceType.ENFORCER_HQ_RECEPTION_DESK)) {
 					// Move Brax to reception desk if he was incorrectly reset to his office (after fixing the bug where NPCs were disappearing):
 					Main.game.getNpc(Brax.class).setLocation(WorldType.ENFORCER_HQ, PlaceType.ENFORCER_HQ_RECEPTION_DESK);
-					
+
 					// Remove all NPC offspring who are not related to the player:
 					for(NPC npc : new HashSet<>(Main.game.getNPCMap().values())) {
 						if(npc instanceof NPCOffspring) {
@@ -1097,7 +1097,7 @@ public class Game implements XMLSaving {
 						}
 					}
 				}
-				
+
 				// Fix overflow of clients in brothel:
 				for(Cell cell : Main.game.getWorlds().get(WorldType.ANGELS_KISS_GROUND_FLOOR).getCells(PlaceType.ANGELS_KISS_BEDROOM)) {
 					if(Main.isVersionOlderThan(loadingVersion, "0.3.1.7")) {
@@ -1118,7 +1118,7 @@ public class Game implements XMLSaving {
 						PerkManager.initialiseSpecialPerksUponCreation(npc); // Generate unique perks for slaves/occupants as well
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.3.3.9")) { // Add in starting Elemental Perks that were overlooked.
 					for(NPC npc : Main.game.getAllNPCs()) {
 						if((npc.isElemental())) {
@@ -1129,7 +1129,7 @@ public class Game implements XMLSaving {
 						Main.game.getPlayer().addTrait(Main.game.getPlayer().getHistory().getAssociatedPerk());
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.3.3.9")) { // Generate new Zaranix tile and remove Arthur tile (if applicable):
 					if(!Main.game.getPlayer().isQuestProgressLessThan(QuestLine.MAIN, Quest.MAIN_1_H_THE_GREAT_ESCAPE)
 							&& Main.game.getWorlds().get(WorldType.DOMINION).getCell(PlaceType.DOMINION_DEMON_HOME_ZARANIX)==null) {
@@ -1151,18 +1151,18 @@ public class Game implements XMLSaving {
 						((Arthur)Main.game.getNpc(Arthur.class)).generateNewTile();
 					}
 				}
-				
+
 				if(Main.isVersionOlderThan(loadingVersion, "0.3.4.5")) {
 					for(NPC npc : Main.game.getAllNPCs()) {
-						if(npc instanceof DominionAlleywayAttacker && ((DominionAlleywayAttacker) npc).isStormAttacker()) { 
+						if(npc instanceof DominionAlleywayAttacker && ((DominionAlleywayAttacker) npc).isStormAttacker()) {
 							Main.game.banishNPC(npc); // Catch for storm attackers who were stuck on a dominion street tile.
-							
+
 						} else {
 							if(!npc.isSlave() && !npc.isUnique() && !Main.game.getPlayer().getFriendlyOccupants().contains(npc.getId())) {
 								npc.setHomeLocation();
 							}
 						}
-						
+
 					}
 				}
 
@@ -1200,21 +1200,21 @@ public class Game implements XMLSaving {
 						RatWarrensDialogue.banishMilkers();
 					}
 				}
-				
+
 				Main.game.pendingSlaveInStocksReset = false;
-				
-				
+
+
 				if(debug) {
 					System.out.println("New NPCs finished");
 					System.out.println("All finished");
 					System.out.println((System.nanoTime()-time)/1000000000d);
 				}
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		if(Main.game.getNpc(GenericAndrogynousNPC.class)==null) { // If was accidentally deleted in version 0.2.10:
 			try {
 				Main.game.addNPC(new GenericAndrogynousNPC(), false);
@@ -1222,20 +1222,20 @@ public class Game implements XMLSaving {
 				e.printStackTrace();
 			}
 		}
-		
+
 		Main.game.setRenderMap(true);
 		Main.game.setRenderAttributesSection(true);
-		
+
 //		Main.game.started = true;
-		
+
 		Main.game.setRequestAutosave(false);
-		
+
 		DialogueNode startingDialogueNode = Main.game.getPlayerCell().getPlace().getDialogue(false);
 		Main.game.addEvent(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Game loaded)]", "data/saves/"+Util.getFileName(file)+".xml"), false);
 		Main.game.setContent(new Response(startingDialogueNode.getLabel(), startingDialogueNode.getDescription(), startingDialogueNode), false);
-		
+
 //		System.out.println(Main.isVersionOlderThan(loadingVersion, "0.2.12.95"));
-		
+
 		// Test enchantments over limits:
 //		for(NPC npc : Main.game.getAllNPCs()) {
 //			int amount = (int) (npc.getEnchantmentPointsUsedTotal()-npc.getAttributeValue(Attribute.ENCHANTMENT_LIMIT));
@@ -1243,20 +1243,20 @@ public class Game implements XMLSaving {
 //				System.out.println((npc.isUnique()?"X   ":"")+amount+": "+npc.getNameIgnoresPlayerKnowledge()+" "+npc.getWorldLocation().getName()+" "+npc.getLocation());
 //			}
 //		}
-		
+
 		Main.game.endTurn(0);
-		
+
 		Main.game.started = true;
 	}
 
 	@SuppressWarnings("unchecked")
 	private static NPC loadNPC(Document doc,
 			Element e,
-			String className, 
+			String className,
 			Map<String, Class<? extends NPC>> classMap,
 			Map<Class<? extends NPC>, Method> loadFromXMLMethodMap,
 			Map<Class<? extends NPC>, Constructor<? extends NPC>> constructorMap){
-		
+
 		try {
 			Class<? extends NPC> npcClass = classMap.get(className);
 			if (npcClass == null) {
@@ -1293,21 +1293,21 @@ public class Game implements XMLSaving {
 			return null;
 		}
 	}
-	
+
 	public Element saveAsXML(Element parentElement, Document doc) {
 		Element element = doc.createElement("game");
-		
+
 		parentElement.appendChild(element);
-		
+
 		return element;
 	}
-	
+
 	public static Game loadFromXML(Element parentElement, Document doc) {
 		Game loadedGame = new Game();
-		
+
 		return loadedGame;
 	}
-	
+
 	public void initNewGame(DialogueNode startingDialogueNode) {
 
 		NPCMap.clear();
@@ -1317,22 +1317,22 @@ public class Game implements XMLSaving {
 		Main.game.getActiveWorld().getCell(0, 0).setDiscovered(false);
 		Main.game.getActiveWorld().getCell(0, 1).setDiscovered(false);
 		Main.game.getActiveWorld().getCell(1, 0).setDiscovered(false);
-		
-		
+
+
 		SlaverAlleyDialogue.dailyReset();
-		
+
 		UtilText.initScriptEngine();
 
 		started = true;
-		
+
 		setContent(new Response(startingDialogueNode.getLabel(), startingDialogueNode.getDescription(), startingDialogueNode));
 	}
-	
+
 	private void initUniqueNPCs() {
 		// Set up NPCs:
 		try {
 			List<Class<? extends NPC>> addedNpcs = new ArrayList<>();
-			
+
 			// Misc.:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(GenericMaleNPC.class))) { addNPC(new GenericMaleNPC(), false); addedNpcs.add(GenericMaleNPC.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(GenericFemaleNPC.class))) { addNPC(new GenericFemaleNPC(), false);  addedNpcs.add(GenericFemaleNPC.class); }
@@ -1345,7 +1345,7 @@ public class Game implements XMLSaving {
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Lumi.class))) { addNPC(new Lumi(), false); addedNpcs.add(Lumi.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Pazu.class))) { addNPC(new Pazu(), false); addedNpcs.add(Pazu.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Ashley.class))) { addNPC(new Ashley(), false); addedNpcs.add(Ashley.class); }
-			
+
 			// Story:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Rose.class))) { addNPC(new Rose(), false); addedNpcs.add(Rose.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Lilaya.class))) { addNPC(new Lilaya(), false); addedNpcs.add(Lilaya.class); }
@@ -1354,12 +1354,12 @@ public class Game implements XMLSaving {
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Elizabeth.class))) { addNPC(new Elizabeth(), false); addedNpcs.add(Elizabeth.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(SubmissionCitadelArcanist.class))) { addNPC(new SubmissionCitadelArcanist(), false); addedNpcs.add(SubmissionCitadelArcanist.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(DarkSiren.class))) { addNPC(new DarkSiren(), false); addedNpcs.add(DarkSiren.class); }
-			
+
 			if(addedNpcs.contains(Lilaya.class)) {
 				getNpc(Lilaya.class).setAffection(Main.game.getPlayer(), AffectionLevel.POSITIVE_ONE_FRIENDLY.getMedianValue());
 				getNpc(Lilaya.class).setAffection(getNpc(Rose.class), AffectionLevel.POSITIVE_FOUR_LOVE.getMedianValue());
 				getNpc(Lilaya.class).addSlave(getNpc(Rose.class));
-				
+
 				getNpc(Lilaya.class).setAffection(getNpc(Lyssieth.class), -60);
 				getNpc(Lilaya.class).setAffection(getNpc(DarkSiren.class), 15);
 				getNpc(Lilaya.class).setMother(getNpc(Lyssieth.class));
@@ -1389,7 +1389,7 @@ public class Game implements XMLSaving {
 			// Enforcers:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Brax.class))) { addNPC(new Brax(), false); addedNpcs.add(Brax.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(CandiReceptionist.class))) { addNPC(new CandiReceptionist(), false); addedNpcs.add(CandiReceptionist.class); }
-			
+
 			if(addedNpcs.contains(Brax.class)) {
 				getNpc(Brax.class).setAffection(getNpc(CandiReceptionist.class), AffectionLevel.POSITIVE_TWO_LIKE.getMedianValue());
 			}
@@ -1444,16 +1444,16 @@ public class Game implements XMLSaving {
 			if(addedNpcs.contains(HarpyNymphoCompanion.class)) {
 				Main.game.getNpc(HarpyNymphoCompanion.class).setAffection(Main.game.getNpc(HarpyNympho.class), AffectionLevel.POSITIVE_FIVE_WORSHIP.getMedianValue());
 			}
-			
+
 			// City hall:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Vanessa.class))) { addNPC(new Vanessa(), false); addedNpcs.add(Vanessa.class); }
-			
+
 			// Slaver alley:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Finch.class))) { addNPC(new Finch(), false); addedNpcs.add(Finch.class); }
 
 			// Rental mommy;
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(RentalMommy.class))) { addNPC(new RentalMommy(), false); addedNpcs.add(RentalMommy.class); }
-			
+
 			// 'Daddy':
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Daddy.class))) { addNPC(new Daddy(), false); addedNpcs.add(Daddy.class); }
 			if(addedNpcs.contains(Daddy.class)) {
@@ -1497,13 +1497,13 @@ public class Game implements XMLSaving {
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(SlimeGuardIce.class))) { addNPC(new SlimeGuardIce(), false); addedNpcs.add(SlimeGuardIce.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(SlimeGuardFire.class))) { addNPC(new SlimeGuardFire(), false); addedNpcs.add(SlimeGuardFire.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(SlimeRoyalGuard.class))) { addNPC(new SlimeRoyalGuard(), false); addedNpcs.add(SlimeRoyalGuard.class); }
-			
+
 			// Submission:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Claire.class))) { addNPC(new Claire(), false); addedNpcs.add(Claire.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(FortressAlphaLeader.class))) { addNPC(new FortressAlphaLeader(), false); addedNpcs.add(FortressAlphaLeader.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(FortressFemalesLeader.class))) { addNPC(new FortressFemalesLeader(), false); addedNpcs.add(FortressFemalesLeader.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(FortressMalesLeader.class))) { addNPC(new FortressMalesLeader(), false); addedNpcs.add(FortressMalesLeader.class); }
-			
+
 			// Nightclub:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Jules.class))) { addNPC(new Jules(), false); addedNpcs.add(Jules.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Kruger.class))) { addNPC(new Kruger(), false); addedNpcs.add(Kruger.class); }
@@ -1516,7 +1516,7 @@ public class Game implements XMLSaving {
 			if(addedNpcs.contains(Kruger.class)) {
 				Main.game.getNpc(Kruger.class).setAffection(Main.game.getNpc(Kalahari.class), AffectionLevel.POSITIVE_FOUR_LOVE.getMedianValue());
 			}
-			
+
 			// Gambling den:
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Roxy.class))) { addNPC(new Roxy(), false); addedNpcs.add(Roxy.class); }
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Axel.class))) { addNPC(new Axel(), false); addedNpcs.add(Axel.class); }
@@ -1543,7 +1543,7 @@ public class Game implements XMLSaving {
 				getNpc(Silence.class).getAffectionMap().remove(getNpc(Silence.class).getId());
 			}
 			if(!Main.game.NPCMap.containsKey(Main.game.getUniqueNPCId(Murk.class))) { addNPC(new Murk(), false); addedNpcs.add(Murk.class); }
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1553,7 +1553,7 @@ public class Game implements XMLSaving {
 	public void endTurn(int secondsPassed) {
 		endTurn(secondsPassed, true);
 	}
-	
+
 	public void endTurn(Response response, DialogueNode dialogue) {
 		int seconds = 0;
 		if(dialogue!=null) {
@@ -1570,20 +1570,20 @@ public class Game implements XMLSaving {
 			Main.game.endTurn(seconds, true);
 //		}
 	}
-	
+
 	private boolean isInNPCUpdateLoop = false;
 	public boolean pendingSlaveInStocksReset = true;
 	private List<NPC> npcsToRemove = new ArrayList<>();
 	private List<NPC> npcsToAdd = new ArrayList<>();
-	
+
 	public void endTurn(int secondsPassedThisTurn, boolean advanceTime) {
 
 		boolean loopDebug = false;
-		
+
 		long tStart = System.nanoTime();
-		
+
 		long startHour = getHour();
-		
+
 		if(advanceTime) {
 			secondsPassed += secondsPassedThisTurn;
 			updateResponses();
@@ -1599,7 +1599,7 @@ public class Game implements XMLSaving {
 //			boolean demonReset = this.getDialogueFlags().hasFlag(DialogueFlagValue.impFortressDemonDefeated) && ((this.getMinutesPassed() - this.getDialogueFlags().impFortressDemonDefeatedTime) > 60*24*5);
 			boolean femalesReset = this.getDialogueFlags().hasFlag(DialogueFlagValue.impFortressFemalesDefeated) && ((this.getMinutesPassed() - this.getDialogueFlags().impFortressFemalesDefeatedTime) > 60*24*5);
 			boolean malesReset = this.getDialogueFlags().hasFlag(DialogueFlagValue.impFortressMalesDefeated) && ((this.getMinutesPassed() - this.getDialogueFlags().impFortressMalesDefeatedTime) > 60*24*5);
-			
+
 			if(alphaReset && Main.game.getPlayer().getWorldLocation()!=WorldType.IMP_FORTRESS_ALPHA) {
 				ImpFortressDialogue.resetFortress(WorldType.IMP_FORTRESS_ALPHA);
 			}
@@ -1616,7 +1616,7 @@ public class Game implements XMLSaving {
 		if(loopDebug) {
 			System.out.println("imp tunnels reset");
 		}
-		
+
 		// Do the player's companion check before anything else, as if a companion leaves, then the follow-up check to send to work needs to be performed.
 		List<GameCharacter> companions = new ArrayList<>(Main.game.getPlayer().getCompanions());
 		for(GameCharacter companion : companions) {
@@ -1635,7 +1635,7 @@ public class Game implements XMLSaving {
 		if(loopDebug) {
 			System.out.println("companions done");
 		}
-		
+
 		// Occupancy:
 		int hoursPassed = (int) (getHour() - startHour);
 		int hourStartTo24 = (int) (startHour%24);
@@ -1665,14 +1665,14 @@ public class Game implements XMLSaving {
 		if(loopDebug) {
 			System.out.println("occupancy done");
 		}
-		
+
 		// If the time has passed midnight on this turn:
 		boolean newDay = getDayNumber(getSecondsPassed()) != getDayNumber(getSecondsPassed() - secondsPassedThisTurn);
-		
+
 		if(newDay) {
 			pendingSlaveInStocksReset = true;
 			Main.game.getPlayer().resetDaysOrgasmCount();
-			
+
 			for(String id : Main.game.getPlayer().getFriendlyOccupants()) {
 				try {
 					NPC occupant = (NPC) Main.game.getNPCById(id);
@@ -1684,25 +1684,25 @@ public class Game implements XMLSaving {
 			if(loopDebug) {
 				System.out.println("starting slaver alley reset");
 			}
-			
+
 			// Place resets:
 			SlaverAlleyDialogue.dailyReset();
 			RatWarrensCaptiveDialogue.applyDailyReset();
 			VengarCaptiveDialogue.applyDailyReset();
 		}
-		
+
 		if(pendingSlaveInStocksReset && !Main.game.getPlayer().getLocationPlace().getPlaceType().equals(PlaceType.SLAVER_ALLEY_PUBLIC_STOCKS)) {
 			SlaverAlleyDialogue.stocksReset();
 			pendingSlaveInStocksReset = false;
 		}
-		
+
 		if(loopDebug) {
 			System.out.println("Slaver alley end");
 		}
-		
+
 		handleAtmosphericConditions(secondsPassedThisTurn);
 
-		
+
 		// Apply status effects and update all NPCs:
 		isInNPCUpdateLoop = true;
 		long tLoopStart = System.nanoTime();
@@ -1711,7 +1711,7 @@ public class Game implements XMLSaving {
 		}
 		for(NPC npc : NPCMap.values()) {
 			boolean inGame = !npc.getLocationPlace().getPlaceType().equals(PlaceType.GENERIC_EMPTY_TILE);
-			
+
 			// Non-slave NPCs clean clothes:
 			if(inGame) {
 				if(!Main.game.getCharactersPresent().contains(npc)) {
@@ -1723,7 +1723,7 @@ public class Game implements XMLSaving {
 					}
 				}
 			}
-			
+
 			// Set NPC resource values:
 			if(secondsPassedThisTurn>=0) {
 				if(inGame) {
@@ -1750,7 +1750,7 @@ public class Game implements XMLSaving {
 					npc.calculateStatusEffects(secondsPassedThisTurn);
 				}
 			}
-			
+
 			// Replace clothing if not in player's tile:
 			if(inGame) {
 				if(hoursPassed > 0) {
@@ -1765,19 +1765,19 @@ public class Game implements XMLSaving {
 							}
 							npc.equipClothing(Util.newArrayListOfValues(EquipClothingSetting.REPLACE_CLOTHING, EquipClothingSetting.ADD_WEAPONS));
 							npc.setPendingClothingDressing(false);
-							
+
 						} else if(!npc.isSlave()
 								&& !npc.isUnique()
 								&& !npc.hasFetish(Fetish.FETISH_EXHIBITIONIST)
 								&& (npc.hasStatusEffect(StatusEffect.EXPOSED) || npc.hasStatusEffect(StatusEffect.EXPOSED_BREASTS) || npc.hasStatusEffect(StatusEffect.EXPOSED_PLUS_BREASTS))) {
 							// Try to replace clothing to cover themselves up:
 							npc.replaceAllClothing();
-							
+
 							npc.calculateStatusEffects(0);
 							// If still exposed after this, get new clothes:
 							if(npc.hasStatusEffect(StatusEffect.EXPOSED) || npc.hasStatusEffect(StatusEffect.EXPOSED_BREASTS) || npc.hasStatusEffect(StatusEffect.EXPOSED_PLUS_BREASTS)) {
 								npc.equipClothing(Util.newArrayListOfValues(EquipClothingSetting.REPLACE_CLOTHING, EquipClothingSetting.ADD_WEAPONS));
-	
+
 								if(loopDebug) {
 									System.out.println(npc.getName(true)+" "+npc.getClass().getName()+" got dressed");
 								}
@@ -1786,12 +1786,12 @@ public class Game implements XMLSaving {
 						}
 					}
 				}
-			
+
 				if(npc.isPendingTransformationToGenderIdentity()
 						&& !npc.getLocation().equals(Main.game.getPlayer().getLocation())) {
 					npc.setBodyToGenderIdentity(false);
 				}
-				
+
 				// Prostitutes stay on promiscuity pills to avoid pregnancies, and, if the NPC is male, to avoid knocking up their clients
 				if((!npc.isPregnant()
 						&& !npc.isSlave()
@@ -1801,19 +1801,19 @@ public class Game implements XMLSaving {
 						|| (npc.isSlave() && npc.getSlavePermissionSettings().get(SlavePermission.PREGNANCY).contains(SlavePermissionSetting.PREGNANCY_PROMISCUITY_PILLS))) {
 					npc.useItem(AbstractItemType.generateItem(ItemType.PROMISCUITY_PILL), npc, false);
 				}
-				
+
 				if(npc.isSlave() && npc.getSlavePermissionSettings().get(SlavePermission.PREGNANCY).contains(SlavePermissionSetting.PREGNANCY_VIXENS_VIRILITY)) {
 					npc.useItem(AbstractItemType.generateItem(ItemType.VIXENS_VIRILITY), npc, false);
 				}
 			}
-			
+
 			if(npc.hasStatusEffect(StatusEffect.PREGNANT_3) && (Main.game.getSecondsPassed() - npc.getTimeProgressedToFinalPregnancyStage())>(12*60*60)) {
 				if(npc instanceof Lilaya) {
 					// Lilaya will only end pregnancy after you've seen it, or if she's a full demon:
 					if(Main.game.getNpc(Lilaya.class).isCharacterReactedToPregnancy(Main.game.getPlayer()) || npc.getRaceStage()==RaceStage.GREATER) {
 						npc.endPregnancy(true);
 					}
-					
+
 				} else {
 					npc.endPregnancy(true);
 					if(npc instanceof Kate) {
@@ -1821,7 +1821,7 @@ public class Game implements XMLSaving {
 					}
 				}
 			}
-			
+
 			if(npc.getWorldLocation()==Main.game.getPlayer().getWorldLocation() && npc.getLocation().equals(Main.game.getPlayer().getLocation())) {
 				for(CoverableArea ca : CoverableArea.values()) {
 					if(npc.isCoverableAreaVisible(ca) && ca!=CoverableArea.MOUTH) {// && Main.game.getPlayerCell().getPlace().getPlaceType()!=PlaceType.WATERING_HOLE_TOILETS) {
@@ -1829,14 +1829,14 @@ public class Game implements XMLSaving {
 					}
 				}
 			}
-			
+
 			for(int i=0; i<hoursPassed; i++) {
 				npc.hourlyUpdate();
 				if(inGame) {
 					npc.performHourlyFluidsCheck();
 				}
 			}
-			
+
 			if(newDay) {
 				long tL = System.nanoTime();
 				if(loopDebug && npc.isUnique()) {
@@ -1853,7 +1853,7 @@ public class Game implements XMLSaving {
 					System.out.println((System.nanoTime()-tL)/1000000000f+"s");
 				}
 			}
-			
+
 			// Companions:
 			companions = new ArrayList<>(npc.getCompanions());
 			for(GameCharacter companion : companions) {
@@ -1863,7 +1863,7 @@ public class Game implements XMLSaving {
 			for(GameCharacter character : npc.getCompanions()) {
 				character.setLocation(npc.getWorldLocation(), npc.getLocation(), false);
 			}
-			
+
 			npc.turnUpdate();
 		}
 		if(loopDebug) {
@@ -1897,7 +1897,7 @@ public class Game implements XMLSaving {
 				Main.game.getPlayer().calculateStatusEffects(secondsPassedThisTurn);
 			}
 		}
-		
+
 		for(int i=1; i <= hoursPassed; i++) {
 			Main.game.getPlayer().performHourlyFluidsCheck();
 		}
@@ -1905,64 +1905,64 @@ public class Game implements XMLSaving {
 		if(loopDebug) {
 			System.out.println("Fluid checks done: "+(System.nanoTime()-tLoopStart)/1000000000f+"s");
 		}
-		
+
 //		RenderingEngine.ENGINE.renderButtons();
 		MainController.updateUI();
 
 		if(loopDebug) {
 			System.out.println("Rendering done: "+(System.nanoTime()-tLoopStart)/1000000000f+"s");
 		}
-		
+
 		Main.mainController.getTooltip().hide();
-		
+
 		if(!Main.game.getPlayer().getStatusEffectDescriptions().isEmpty()
 				&& Main.game.getCurrentDialogueNode()!=MiscDialogue.STATUS_EFFECTS
 				&& !Main.game.getCurrentDialogueNode().isTravelDisabled()
 				&& !Main.game.isInSex()
 				&& !Main.game.isInCombat()) {
-			
+
 			if(Main.game.getCurrentDialogueNode().getDialogueNodeType()==DialogueNodeType.NORMAL) {
 				Main.game.saveDialogueNode();
 			}
-			
+
 			Main.game.setContent(new Response("", "", MiscDialogue.STATUS_EFFECTS){
 				@Override
 				public void effects() {
 					if(!Main.game.getPlayer().hasQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY) && Main.game.getPlayer().hasNonArcaneEssences()) {
 						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().startQuest(QuestLine.SIDE_ENCHANTMENT_DISCOVERY));
 					}
-					
+
 					if (!Main.game.getPlayer().hasQuest(QuestLine.SIDE_FIRST_TIME_PREGNANCY) && Main.game.getPlayer().isVisiblyPregnant()) {
 						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().startQuest(QuestLine.SIDE_FIRST_TIME_PREGNANCY));
 					}
-				}	
+				}
 			});
-			
+
 			Main.game.getPlayer().getStatusEffectDescriptions().clear();
 		}
-		
+
 		// Miscellaneous things:
-		
+
 		if(Main.game.getCurrentDialogueNode().getDialogueNodeType()==DialogueNodeType.NORMAL && !Main.game.getCurrentDialogueNode().isTravelDisabled()) { // Catch slavery management NPC not correctly being assigned to null:
 			Main.game.getDialogueFlags().setManagementCompanion(null);
 		}
-		
+
 		if(loopDebug) {
 			System.out.println((System.nanoTime()-tStart)/1000000000d+"s");
 		}
 	}
-	
+
 	public Season getSeason() {
 		return Season.getSeasonFromMonth(getDateNow().getMonth());
 	}
-	
+
 	// Set weather and time remaining.
 	// Handles Lilith's Lust build up.
 	// Appends description of storm gathering and breaking to mainController.
 	private void handleAtmosphericConditions(int secondsPassed) {
 
 		weatherTimeRemainingInSeconds -= secondsPassed;
-		
+
 		// Weather change:
 		if (weatherTimeRemainingInSeconds < 0) {
 			switch (currentWeather) {
@@ -1975,7 +1975,7 @@ public class Game implements XMLSaving {
 						weatherTimeRemainingInSeconds = (2*60 + Util.random.nextInt(2 * 60))*60; // Clouds last for 2-4 hours
 					}
 					break;
-					
+
 				case CLOUD:
 					if(getSecondsPassed() >= nextStormTimeInSeconds) {
 						currentWeather = Weather.MAGIC_STORM_GATHERING;
@@ -1994,20 +1994,20 @@ public class Game implements XMLSaving {
 						}
 					}
 					break;
-					
+
 				case MAGIC_STORM:
 					nextStormTimeInSeconds = getSecondsPassed() + ((60*48) + (60*Util.random.nextInt(24)))*60; // Next storm in 2-3 days
 					gatheringStormDurationInSeconds = (4 * 60 + Util.random.nextInt(2 * 60))*60;
 					currentWeather = Weather.CLEAR;
 					weatherTimeRemainingInSeconds = (4 * 60 + Util.random.nextInt(4 * 60))*60;
 					break;
-					
+
 				case MAGIC_STORM_GATHERING:
 					currentWeather = Weather.MAGIC_STORM;
 					Main.game.getDialogueFlags().values.add(DialogueFlagValue.stormTextUpdateRequired);
 					weatherTimeRemainingInSeconds = (8 * 60 + Util.random.nextInt(4 * 60))*60; // Storm lasts 8-12 hours
 					break;
-					
+
 				case RAIN: case SNOW:
 					if(getSecondsPassed() >= nextStormTimeInSeconds) {
 						currentWeather = Weather.MAGIC_STORM_GATHERING;
@@ -2017,7 +2017,7 @@ public class Game implements XMLSaving {
 						weatherTimeRemainingInSeconds = (2*60 + Util.random.nextInt(2 * 60))*60; // Clouds last for 2-4 hours
 					}
 					break;
-					
+
 				default:
 					break;
 			}
@@ -2027,32 +2027,32 @@ public class Game implements XMLSaving {
 	public long getNextStormTimeInSeconds() {
 		return nextStormTimeInSeconds;
 	}
-	
+
 	public String getNextStormTimeAsTimeString() {
 		long minutes = ((nextStormTimeInSeconds+gatheringStormDurationInSeconds)-getSecondsPassed())/60;
 		long hours = minutes/60;
 		return (hours/24)+" days, "+hours%24+" hours, "+minutes%60+" minutes";
 	}
-	
+
 	public Weather getCurrentWeather() {
 		return currentWeather;
 	}
-	
+
 	/**
 	 * Sets the content of the main WebView based on the response of the current Dialogue Node's index.
-	 * 
+	 *
 	 * @param index The dialogue choice index.
 	 */
 	private int positionAnchor = 0;
 	private String dialogueTitle = "";
 	public void setContent(int index) {
-		
+
 		Response response = currentDialogueNode.getResponse(responseTab, index);
-		
+
 		if (response != null) {
-			
+
 			String corruptionGains = "";
-			
+
 			if(!response.isAvailable()) {
 				if(!response.isAbleToBypass()) {
 					return;
@@ -2063,38 +2063,38 @@ public class Game implements XMLSaving {
 							+ "</p>");
 				}
 			}
-			
+
 			String chosenResponse = response.getTitle();
 			DialogueNode node = response.getNextDialogue();
 			response.applyEffects();
 			if(node!=null) {
 				node.applyPreParsingEffects();
 			}
-			
+
 			if(response instanceof ResponseCombat) {
 				setContent(new Response("", "", ((ResponseCombat)response).initCombat()));
 				return;
-				
+
 			} else if(response instanceof ResponseSex) {
 				setContent(new Response("", "", ((ResponseSex)response).initSex()));
 				((ResponseSex)response).postSexInitEffects();
 				Main.mainController.updateUILeftPanel();
 				return;
-				
+
 			} else if(response instanceof ResponseEffectsOnly) {
 				if(Main.game.isStarted()) {
 					Main.game.endTurn(response, null); // Only increment time if response overrides getSecondsPassed
 				}
 				return;
-				
+
 			} else if(response instanceof ResponseTrade) {
 				((ResponseTrade)response).openTrade();
 				return;
 			}
-			
-			
+
+
 			if (node != null) {
-				
+
 				// Add characters in this scene to the player's encountered characters list:
 				if(started) {
 					if (!getCharactersPresent().isEmpty()) {
@@ -2113,7 +2113,7 @@ public class Game implements XMLSaving {
 						}
 					}
 				}
-				
+
 				String headerContent = node.getHeaderContent();
 				String content;
 				try {
@@ -2135,30 +2135,30 @@ public class Game implements XMLSaving {
 							if (currentDialogueNode.getDialogueNodeType() == DialogueNodeType.NORMAL) {
 								positionAnchor++;
 							}
-						
+
 							pastDialogueSB.append("<hr id='position" + positionAnchor + "'><p class='option-disabled'>&gt " + chosenResponse + "</p>");
 						}
-						
+
 						if (getMapDisplay() == DialogueNodeType.NORMAL)
 							initialPositionAnchor = positionAnchor;
 
 						pastDialogueSB.append(
 								UtilText.parse(
-									corruptionGains 
+									corruptionGains
 									+ textStartStringBuilder.toString()
 									+ content
 									+ textEndStringBuilder.toString()
 								));
-						
+
 					} else {
 						dialogueTitle = UtilText.parse(node.getLabel());
-						
+
 						if (getMapDisplay() == DialogueNodeType.NORMAL)
 							initialPositionAnchor = positionAnchor;
 
 						if (currentDialogueNode.getDialogueNodeType() == DialogueNodeType.NORMAL)
 							positionAnchor = 0;
-						
+
 						pastDialogueSB.setLength(0);
 						pastDialogueSB.append(
 								UtilText.parse(
@@ -2179,14 +2179,14 @@ public class Game implements XMLSaving {
 				if(node != currentDialogueNode) {
 					responsePage = 0;
 					currentDialogueNode = node;
-					
+
 				} else {
 					currentDialogueNode = node;
 					checkForResponsePage();
 					resetPointer = false;
 				}
 				checkForResponseTab();
-				
+
 				if(Main.game!=null
 						&& Main.game.isStarted()
 						&& Main.game.isRequestAutosave()
@@ -2195,10 +2195,10 @@ public class Game implements XMLSaving {
 					Main.saveGame("AutoSave_"+Main.game.getPlayer().getName(false), true);
 					Main.game.setRequestAutosave(false);
 				}
-				
-				
+
+
 				if (node.isContinuesDialogue()) {
-					currentDialogue = 
+					currentDialogue =
 								"<div id='main-content'>"
 									+ getTitleDiv(dialogueTitle)
 									+ "<div class='div-center' id='content-block'>"
@@ -2259,14 +2259,14 @@ public class Game implements XMLSaving {
 							+ "<script>function scrollToElement() {document.getElementById('content-block').scrollTop = document.getElementById('position" + (positionAnchor) + "').offsetTop -64;}</script>"
 						:"<body>"),
 						currentDialogue);
-				
+
 				textEndStringBuilder.setLength(0);
 				textStartStringBuilder.setLength(0);
 
 				if(started) {
 					Main.game.endTurn(response, node);
 				}
-				
+
 				TooltipUpdateThread.cancelThreads=true;
 				//Main.mainController.processNewDialogue();
 			}
@@ -2274,45 +2274,45 @@ public class Game implements XMLSaving {
 	}
 
 	public void setContent(Response response, boolean allowTimeProgress, Colour flashMessageColour, String flashMessageText){
-		
+
 		DialogueNode node = response.getNextDialogue();
 		response.applyEffects();
 		if(node!=null) {
 			node.applyPreParsingEffects();
 		}
-		
+
 		if(response instanceof ResponseCombat) {
 			setContent(new Response("", "", ((ResponseCombat)response).initCombat()));
 			return;
-			
+
 		} else if(response instanceof ResponseSex) {
 			setContent(new Response("", "", ((ResponseSex)response).initSex()));
 			((ResponseSex)response).postSexInitEffects();
 			Main.mainController.updateUILeftPanel();
 			return;
-			
+
 		} else if(response instanceof ResponseEffectsOnly) {
 			if(Main.game.isStarted()) {
 				Main.game.endTurn(response, null); // Only increment time if response overrides getSecondsPassed
 			}
 			return;
-			
+
 		} else if(response instanceof ResponseTrade) {
 			((ResponseTrade)response).openTrade();
 			return;
 		}
-		
+
 		if (node == null){
 			return;
 		}
-		
+
 		int currentPosition = 0;
 		if(getCurrentDialogueNode()!=null) {
 			if(!Main.game.isInSex() || Main.sex.getTurn()>1) { // First turn of sex should always reset to top
 				currentPosition =  (int) Main.mainController.getWebEngine().executeScript("document.getElementById('content-block').scrollTop");
 			}
 		}
-		
+
 		String headerContent = node.getHeaderContent();
 		String content;
 		try {
@@ -2324,12 +2324,12 @@ public class Game implements XMLSaving {
 			ex.printStackTrace();
 		}
 		boolean resetPointer = false;
-		
+
 		if (getMapDisplay() == DialogueNodeType.NORMAL) {
 			initialPositionAnchor = positionAnchor;
 		}
-		
-		
+
+
 		// Add characters in this scene to the player's encountered characters list:
 		if(started) {
 			if (!getCharactersPresent().isEmpty()) {
@@ -2346,29 +2346,29 @@ public class Game implements XMLSaving {
 				}
 			}
 		}
-		
+
 		if (currentDialogueNode != null) {
 			if (node.isContinuesDialogue()) {
 				if(Main.game.isInSex()) {
 					dialogueTitle = UtilText.parse(node.getLabel());
 				}
-				
+
 				if(node.isDisplaysActionTitleOnContinuesDialogue()) {
 					if (currentDialogueNode.getDialogueNodeType() == DialogueNodeType.NORMAL) {
 						positionAnchor++;
 					}
-					
+
 					pastDialogueSB.append(UtilText.parse("<hr id='position" + positionAnchor + "'><p class='option-disabled'>&gt " + currentDialogueNode.getLabel() + "</p>"));
 				}
-				
+
 				pastDialogueSB.append(content);
-					
+
 			} else {
 				dialogueTitle = UtilText.parse(node.getLabel());
 				if (currentDialogueNode.getDialogueNodeType() == DialogueNodeType.NORMAL) {
 					positionAnchor = 0;
 				}
-				
+
 				pastDialogueSB.setLength(0);
 				pastDialogueSB.append(
 						UtilText.parse(
@@ -2388,19 +2388,19 @@ public class Game implements XMLSaving {
 						 + textEndStringBuilder.toString()
 					));
 		}
-		
+
 		if(node != currentDialogueNode) {
 			responsePage = 0;
 			currentDialogueNode = node;
 			resetPointer = true;
-			
+
 		} else {
 			currentDialogueNode = node;
 			checkForResponsePage();
 			resetPointer = false;
 		}
 		checkForResponseTab();
-		
+
 		if(Main.game!=null
 				&& Main.game.isStarted()
 				&& Main.game.isRequestAutosave()
@@ -2421,7 +2421,7 @@ public class Game implements XMLSaving {
 									? "<div id='header-content' style='font-size:" + Main.getProperties().fontSize + "px; line-height:" + (Main.getProperties().fontSize + 6) + "px;-webkit-user-select: none;'>"
 										+ (currentDialogueNode.disableHeaderParsing() ? headerContent : UtilText.parse(headerContent))
 										+ "</div>"
-									: "") 
+									: "")
 								+ (content != null
 									? "<div "+(Main.getProperties().hasValue(PropertyValue.fadeInText)?"id='text-content'":"")
 											+" style='font-size:" + Main.getProperties().fontSize + "px; line-height:" + (Main.getProperties().fontSize + 6) + "px;"
@@ -2463,7 +2463,7 @@ public class Game implements XMLSaving {
 				+ "</body>";
 
 		}
-	
+
 		Main.mainController.setFlashMessageColour(flashMessageColour);
 		Main.mainController.setFlashMessageText(flashMessageText);
 
@@ -2479,7 +2479,7 @@ public class Game implements XMLSaving {
 					:"<body>"),
 				currentDialogue);
 		//--------------------
-		
+
 		textEndStringBuilder.setLength(0);
 		textStartStringBuilder.setLength(0);
 
@@ -2492,9 +2492,9 @@ public class Game implements XMLSaving {
 			}
 		}
 		//--------------------
-		
+
 	}
-	
+
 	private boolean requiresYScroll(DialogueNode node) {
 		return currentDialogueNode.getDialogueNodeType()==DialogueNodeType.INVENTORY
 				&& (!node.equals(InventoryDialogue.DYE_CLOTHING)
@@ -2504,7 +2504,7 @@ public class Game implements XMLSaving {
 						&& !node.equals(InventoryDialogue.DYE_EQUIPPED_WEAPON)
 						&& !node.equals(InventoryDialogue.DYE_WEAPON));
 	}
-	
+
 	private static boolean isContentScroll(DialogueNode node) {
 		return (node.getDialogueNodeType()!=DialogueNodeType.CHARACTERS_PRESENT
 				&& !node.equals(PhoneDialogue.CHARACTER_APPEARANCE)
@@ -2523,12 +2523,12 @@ public class Game implements XMLSaving {
 				|| node.equals(InventoryDialogue.DYE_EQUIPPED_WEAPON)
 				|| node.equals(InventoryDialogue.DYE_WEAPON);
 	}
-	
+
 	private String getTitleDiv(String title) {
 		if(dialogueTitle.isEmpty()) {
 			return "";
 		}
-		
+
 		return "<div class='content-title'>"
 					+ "<div class='title-button' id='copy-content-button'>"+SVGImages.SVG_IMAGE_PROVIDER.getCopyIcon()+"</div>"
 					+ (Main.game.getCurrentDialogueNode().equals(CharactersPresentDialogue.MENU)
@@ -2539,31 +2539,31 @@ public class Game implements XMLSaving {
 					+ "<h4 style='text-align:center;'>" + dialogueTitle + "</h4>"
 				+ "</div>";
 	}
-	
+
 	private String getMapDiv() {
 		return "";
 	}
-	
+
 	/**
 	 * Sets the content of the main WebView based on a DialogueNode.
-	 * 
+	 *
 	 * @param response
 	 */
 	public void setContent(Response response) {
 		setContent(response, true, null, null);
 	}
-	
+
 	public void setContent(Response response, boolean allowTimeProgress) {
 		setContent(response, allowTimeProgress, null, null);
 	}
-	
+
 	public void setContent(Response response, Colour colour, String messageText) {
 		setContent(response, true, colour, messageText);
 	}
-	
+
 	private void resetResponsePointer() {
 		responsePointer=responsePage*MainController.RESPONSE_COUNT;
-		
+
 		for (int i=responsePage*MainController.RESPONSE_COUNT; i<responsePage*MainController.RESPONSE_COUNT+(MainController.RESPONSE_COUNT-1); i++) {
 			if(currentDialogueNode.getResponse(responseTab, i) != null) {
 				responsePointer = i;
@@ -2571,7 +2571,7 @@ public class Game implements XMLSaving {
 			}
 		}
 	}
-	
+
 	private void checkForResponsePage() {
 		for (int i = responsePage*MainController.RESPONSE_COUNT; i<responsePage*MainController.RESPONSE_COUNT+(MainController.RESPONSE_COUNT-1); i++) {
 			if(currentDialogueNode.getResponse(responseTab, i) != null) {
@@ -2580,7 +2580,7 @@ public class Game implements XMLSaving {
 		}
 		responsePage=0;
 	}
-	
+
 	public boolean decrementResponseTab() {
 		for(int i = -1; i > -6; i--) {
 			if(currentDialogueNode.getResponseTabTitle(responseTab+i)!=null) {
@@ -2591,7 +2591,7 @@ public class Game implements XMLSaving {
 		}
 		return false;
 	}
-	
+
 	public boolean incrementResponseTab() {
 		for(int i=1; i<6; i++) {
 			if(currentDialogueNode.getResponseTabTitle(responseTab+i)!=null) {
@@ -2602,7 +2602,7 @@ public class Game implements XMLSaving {
 		}
 		return false;
 	}
-	
+
 	private void checkForResponseTab() {
 		if(currentDialogueNode.getResponseTabTitle(responseTab)==null) {
 			// I felt like it was more intuitive to go back to 0 rather than the nearest tab.
@@ -2615,7 +2615,7 @@ public class Game implements XMLSaving {
 			responseTab=0;
 		}
 	}
-	
+
 	public void updateResponses() {
 		String content = getResponsesDiv(Main.game.getCurrentDialogueNode(), false);
 		content=content.replaceAll("\r", "");
@@ -2624,7 +2624,7 @@ public class Game implements XMLSaving {
 		Main.mainController.getWebEngine().executeScript("document.getElementById('RESPONSE_BOX').innerHTML = \""+content+"\"");
 		MainController.setResponseEventListeners();
 	}
-	
+
 	/**
 	 * Create the response box html.
 	 */
@@ -2636,14 +2636,14 @@ public class Game implements XMLSaving {
 		if(withPointerReset) {
 			resetResponsePointer();
 		}
-		
+
 		choicesDialogueSB = new StringBuilder();
 
 		choicesDialogueSB.append("<div id='RESPONSE_BOX'>");
-		
+
 		if(node.getResponseTabTitle(0) != null && !node.getResponseTabTitle(0).isEmpty()) {
 			choicesDialogueSB.append("<div class='response-container tabs'>");
-			
+
 			int responsePageCounter = 0;
 			while (node.getResponseTabTitle(responsePageCounter) != null){
 				choicesDialogueSB.append(
@@ -2657,7 +2657,7 @@ public class Game implements XMLSaving {
 							+(responsePageCounter==responseTab-1
 								?"<b class='hotkey-icon'>"
 									+ (Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_PREVIOUS_TAB) == null
-										? "" 
+										? ""
 										: Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_PREVIOUS_TAB).getFullName()) + "</b>"
 								:(responsePageCounter==responseTab+1
 									?"<b class='hotkey-icon'>"
@@ -2671,13 +2671,13 @@ public class Game implements XMLSaving {
 				responsePageCounter++;
 			}
 			choicesDialogueSB.append("</div>");
-			
+
 		} else {
 			responseTab = 0;
 		}
 
 		choicesDialogueSB.append("<div class='response-full-container'>");
-		
+
 		if (responsePage > 0) {
 			choicesDialogueSB.append("<div class='response-switcher left' id='switch_left'><b class='hotkey-icon'>"
 					+ (Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_PREVIOUS_PAGE) == null ? "" : Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_PREVIOUS_PAGE).getFullName()) + "</b>&#60</div>");
@@ -2686,9 +2686,9 @@ public class Game implements XMLSaving {
 					+ (Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_PREVIOUS_PAGE) == null ? "" : Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_PREVIOUS_PAGE).getFullName())
 					+ "</b><span class='option-disabled'>&#60</span></div>");
 		}
-		
+
 		choicesDialogueSB.append("<div class='response-container'>");
-		
+
 		Response response;
 		if (responsePage == 0) {
 			for (int i = 1; i < MainController.RESPONSE_COUNT; i++) {
@@ -2708,7 +2708,7 @@ public class Game implements XMLSaving {
 				choicesDialogueSB.append("<div class='response-box disabled"+(responsePointer==0?" selected":"")+"' id='option_0'>"
 											+ "<b class='hotkey-icon disabled'>" + getResponseHotkey(0) + "</b>"
 										+ "</div>");
-			
+
 		} else {
 			for (int i = 0; i < (MainController.RESPONSE_COUNT-1); i++) {
 				response = node.getResponse(responseTab, i + (responsePage * MainController.RESPONSE_COUNT));
@@ -2728,36 +2728,36 @@ public class Game implements XMLSaving {
 												+ "<b class='hotkey-icon disabled'>" + getResponseHotkey(0) + "</b>"
 											+ "</div>");
 			}
-			
+
 		}
 		choicesDialogueSB.append("</div>");
-		
+
 		if (node.getResponse(responseTab, ((responsePage + 1) * MainController.RESPONSE_COUNT)) != null){
 			choicesDialogueSB.append("<div class='response-switcher right' id='switch_right'><b class='hotkey-icon'>"
 					+ (Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_NEXT_PAGE) == null ? "" : Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_NEXT_PAGE).getFullName()) + "</b>" + "&#62</div>");
-			
+
 		}else{
 			choicesDialogueSB.append("<div class='response-switcher right disabled' id='switch_right'><b class='hotkey-icon disabled'>"
 					+ (Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_NEXT_PAGE) == null ? "" : Main.getProperties().hotkeyMapPrimary.get(KeyboardAction.RESPOND_NEXT_PAGE).getFullName())
 					+ "</b><span class='option-disabled'>&#62</span></div>");
 		}
-		
+
 		choicesDialogueSB.append("</div>");
 		choicesDialogueSB.append("</div>");
-		
+
 		return choicesDialogueSB.toString();
 	}
-	
+
 	private boolean isResponseTabEmpty(DialogueNode node, int responseTab) {
 		for (int i = 1; i < MainController.RESPONSE_COUNT; i++) {
 			if(node.getResponse(responseTab, i)!=null) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	public String getContentForClipboard(){
 		String content;
 		try {
@@ -2768,7 +2768,7 @@ public class Game implements XMLSaving {
 					+ "</p>";
 			ex.printStackTrace();
 		}
-		
+
 		return "<body style='background:#1e1e20; color:#DDD; font-family:Calibri;'>"
 				+ "<style>"
 				+ ".speech:before { content: '\"'; }"
@@ -2795,10 +2795,10 @@ public class Game implements XMLSaving {
 		String iconLeftTop="";
 		String iconRight="";
 		boolean responseDisabled = false;
-		
+
 		if(response.disabledOnNullDialogue() && response.getNextDialogue()==null) {
 			responseDisabled = true;
-			
+
 		} else if (response.isAbleToBypass()) {
 			iconLeftBottom = "<div class='response-icon-leftBottom'>"+SVGImages.SVG_IMAGE_PROVIDER.getResponseCorruptionBypass()+"</div>";
 		}
@@ -2809,7 +2809,7 @@ public class Game implements XMLSaving {
 				responseDisabled = true;
 			}
 		}
-		
+
 		if(response.getSexPace()!=null) {
 			switch(response.getSexPace()) {
 				case DOM_GENTLE:
@@ -2835,11 +2835,11 @@ public class Game implements XMLSaving {
 
 		if(response.isSexActionSwitch()) {
 			iconRight = "<div class='response-icon-rightBottom'>"+SVGImages.SVG_IMAGE_PROVIDER.getResponseSexSwitch()+"</div>";
-			
+
 		} else if(response.getSexActionType()==SexActionType.START_ADDITIONAL_ONGOING) {
 			iconRight = "<div class='response-icon-rightBottom'>"+SVGImages.SVG_IMAGE_PROVIDER.getResponseSexAdditional()+"</div>";
 		}
-		
+
 		float fontSize = 1;
 		String strippedTitle = UtilText.parse(response.getTitle()).replaceAll("<.*?>", "").replaceAll(UtilText.getCurrencySymbol(), "1");
 		if(strippedTitle.length()>14) {
@@ -2852,13 +2852,13 @@ public class Game implements XMLSaving {
 //			style = "style='font-size:"+fontSize+"em; line-height:10px; white-space:normal;'";
 		}
 		style = "style='font-size:"+fontSize+"em;'";
-		
+
 		if(response.getHighlightColour()!=Colour.TEXT) {
 			style = "style='color:"+response.getHighlightColour().toWebHexString()+"; font-size:"+fontSize+"em;'";
 		}
-		
+
 		String titleText = UtilText.parse(response.getTitle());
-		
+
 		if(responsePage==0) {
 			return "<div class='response-box"+(responsePointer==option?" selected":"")+"' id='option_" + option + "'>"
 						+ "<b class='hotkey-icon'>" + getResponseHotkey(option) + "</b>"
@@ -2867,7 +2867,7 @@ public class Game implements XMLSaving {
 						+ iconLeftBottom
 						+ iconRight
 					+ "</div>";
-			
+
 		} else {
 			if(option == 0) {
 				return "<div class='response-box"+(responsePointer-((responsePage+1)*MainController.RESPONSE_COUNT)+1==(option)?" selected":"")+"' id='option_" + option + "'>"
@@ -2893,8 +2893,8 @@ public class Game implements XMLSaving {
 
 	private String getResponseHotkey(int i) {
 		if (!(0 <= i && i <= 14)) { return ""; }
-		
-		KeyboardAction[] keyboardActions = 
+
+		KeyboardAction[] keyboardActions =
 			{
 					KeyboardAction.RESPOND_0, KeyboardAction.RESPOND_1, KeyboardAction.RESPOND_2, KeyboardAction.RESPOND_3, KeyboardAction.RESPOND_4,
 					KeyboardAction.RESPOND_5, KeyboardAction.RESPOND_6, KeyboardAction.RESPOND_7, KeyboardAction.RESPOND_8, KeyboardAction.RESPOND_9,
@@ -2908,11 +2908,11 @@ public class Game implements XMLSaving {
 			return hotkeyForCurrentAction.asHotkey();
 		}
 	}
-	
+
 
 	public void responseNavigationUp(){
 		int minIndex = responsePage*MainController.RESPONSE_COUNT;
-		
+
 		if(responsePointer==0) {
 			responsePointer=MainController.RESPONSE_COUNT-5;
 		} else if(responsePointer>minIndex+5) {
@@ -2921,35 +2921,35 @@ public class Game implements XMLSaving {
 		Main.game.updateResponses();
 //		setResponses(currentDialogueNode, false);
 	}
-	
-	
+
+
 	public void responseNavigationDown(){
 		int maxIndex = responsePage*MainController.RESPONSE_COUNT + MainController.RESPONSE_COUNT-1;
-		
+
 		if(responsePointer==MainController.RESPONSE_COUNT-5) {
 			responsePointer=0;
-			
+
 		} else if(responsePointer<=maxIndex-5 && responsePointer!=0) {
 			responsePointer+=5;
 		}
 		Main.game.updateResponses();
 //		setResponses(currentDialogueNode, false);
 	}
-	
+
 	public void responseNavigationLeft(){
 		if(responsePage==0) {
 			int minIndex = responsePointer - ((responsePointer-1)%5);
-			
+
 			if(responsePointer==0) {
 				responsePointer=MainController.RESPONSE_COUNT-1;
-				
+
 			} else if(responsePointer > minIndex) {
 				responsePointer--;
 			}
-			
+
 		} else {
 			int minIndex = (responsePointer/5)*5;
-			
+
 			if(responsePointer > minIndex) {
 				responsePointer--;
 			}
@@ -2957,21 +2957,21 @@ public class Game implements XMLSaving {
 		Main.game.updateResponses();
 //		setResponses(currentDialogueNode, false);
 	}
-	
+
 	public void responseNavigationRight(){
 		if(responsePage==0) {
 			int maxIndex = responsePointer + (4 - (responsePointer-1)%5);
-			
+
 			if(responsePointer==MainController.RESPONSE_COUNT-1) {
 				responsePointer=0;
-				
+
 			} else if(responsePointer < maxIndex && responsePointer!=0) {
 				responsePointer++;
 			}
-			
+
 		} else {
 			int maxIndex = ((responsePointer/5)+1)*5;
-			
+
 			if(responsePointer < maxIndex-1) {
 				responsePointer++;
 			}
@@ -2985,7 +2985,7 @@ public class Game implements XMLSaving {
 		savedDialogueNode = currentDialogueNode;
 		previousPastDialogueSBContents = pastDialogueSB.toString();
 	}
-	
+
 	/**
 	 * Flashes a message at the bottom of the screen.
 	 * @param colour Colour of the text message.
@@ -3017,16 +3017,16 @@ public class Game implements XMLSaving {
 	public void restoreSavedContent(boolean regenerateSceneDialogue) {
 		positionAnchor = initialPositionAnchor;
 		dialogueTitle = UtilText.parse(savedDialogueNode.getLabel());
-		
+
 		currentDialogueNode = savedDialogueNode;
-		
+
 		if(Main.game.isInSex()) {
 			Main.sex.recalculateSexActions();
 		}
 		//TODO
 		if (currentDialogueNode.reloadOnRestore() || regenerateSceneDialogue) {
 //			System.out.println("restored with regenerated text");
-			
+
 			String headerContent = currentDialogueNode.getHeaderContent();
 			String content;
 			try {
@@ -3037,8 +3037,8 @@ public class Game implements XMLSaving {
 						+ "</p>";
 				ex.printStackTrace();
 			}
-			
-			currentDialogue = 
+
+			currentDialogue =
 					"<div id='main-content'>"
 						+ getTitleDiv(dialogueTitle)
 						+ "<div class='div-center' id='content-block'>"
@@ -3058,12 +3058,12 @@ public class Game implements XMLSaving {
 						+ getResponsesDiv(currentDialogueNode)
 					+ "</div>"
 				+ "</body>";
-			
-			
+
+
 		} else {
 			currentDialogue = savedDialogue;
 		}
-		
+
 		pastDialogueSB.setLength(0);
 		pastDialogueSB.append(previousPastDialogueSBContents);
 
@@ -3083,7 +3083,7 @@ public class Game implements XMLSaving {
 			currentDialogue = currentDialogue.replaceFirst("<div class='div-center' style='font-size:" + FONT_SIZE_LARGE + "px; line-height:" + (FONT_SIZE_LARGE + 6) + "px;'>",
 					"<div class='div-center' style='font-size:" + FONT_SIZE_HUGE + "px; line-height:" + (FONT_SIZE_HUGE + 6) + "px;'>");
 		}
-		
+
 		setMainContentRegex(
 				(savedDialogueNode.getDialogueNodeType()!=DialogueNodeType.PHONE && savedDialogueNode.getDialogueNodeType()!=DialogueNodeType.CHARACTERS_PRESENT
 					?"<body onLoad='scrollToElement()'>"
@@ -3093,25 +3093,25 @@ public class Game implements XMLSaving {
 
 		textEndStringBuilder.setLength(0);
 		textStartStringBuilder.setLength(0);
-		
+
 		Main.game.endTurn(0);
 		//Main.mainController.processNewDialogue();
 
 	}
-	
+
 	private static void setMainContentRegex(String prefix, String currentDialogue) {
 		Main.mainController.setMainContent(prefix + currentDialogue.replaceAll("\\.\\.\\.", "&hellip;").replaceAll("\\.([\\D])", ".\u200b$1").replaceAll("\\[", "\u200b[\u200b"));
 	}
-	
+
 	public List<NPC> getCharactersPresent() {
 		if(player==null) {
 			return new ArrayList<>();
-			
+
 		} else {
 			return getCharactersPresent(player.getWorldLocation(), player.getLocation());
 		}
 	}
-	
+
 	public List<NPC> getNonCompanionCharactersPresent() {
 		List<NPC> nonCompanionCharactersPresent = new ArrayList<>();
 		nonCompanionCharactersPresent.addAll(getCharactersPresent());
@@ -3125,7 +3125,7 @@ public class Game implements XMLSaving {
 		nonCompanionCharactersPresent.removeIf((npc) -> Main.game.getPlayer().hasCompanion(npc) || (npc.getPartyLeader()!=null && Main.game.getPlayer().hasCompanion(npc.getPartyLeader())));
 		return nonCompanionCharactersPresent;
 	}
-	
+
 	public List<NPC> getCharactersTreatingCellAsHome(Cell cell) {
 		List<NPC> charactersHome = new ArrayList<>();
 
@@ -3151,23 +3151,23 @@ public class Game implements XMLSaving {
 				(c2.getLevel()-c1.getLevel())==0
 					?c2.getName(true).compareTo(c1.getName(true))
 					:(c2.getLevel()-c1.getLevel()));
-		
+
 		return charactersHome;
 	}
-	
+
 	public List<NPC> getCharactersPresent(WorldType worldType, AbstractPlaceType placeType) {
 		Cell cell = worlds.get(worldType).getCell(placeType);
-		
+
 		return getCharactersPresent(cell);
 	}
-	
+
 	public List<NPC> getCharactersPresent(Cell cell) {
 		return getCharactersPresent(cell.getType(), cell.getLocation());
 	}
-	
+
 	public List<NPC> getCharactersPresent(WorldType worldType, Vector2i location) {
 		List<NPC> charactersPresent = new ArrayList<>();
-		
+
 		if(getWorlds().get(worldType).getCell(location).getCharactersPresentIds()!=null) {
 			Set<String> ids = new HashSet<>(getWorlds().get(worldType).getCell(location).getCharactersPresentIds());
 			for(String id : ids) {
@@ -3185,7 +3185,7 @@ public class Game implements XMLSaving {
 				}
 			}
 		}
-		
+
 		try {
 			charactersPresent.sort((c1, c2) ->
 					(c2.getLevel()-c1.getLevel())==0
@@ -3193,18 +3193,18 @@ public class Game implements XMLSaving {
 						:(c2.getLevel()-c1.getLevel()));
 		} catch(Exception ex) {
 		}
-		
+
 		return charactersPresent;
 	}
-	
+
 	public int getModifierTravelTime(boolean onLand, int time) {
 		int maxTime = 0;
-		
+
 		for(GameCharacter character : Main.game.getPlayer().getParty()) {
 			int speed = onLand
 						?character.getLegConfiguration().getLandSpeedModifier()
 						:character.getLegConfiguration().getWaterSpeedModifier();
-			
+
 			int travelTime = time;
 			travelTime = (int) (travelTime*((100+speed)/100f));
 			if(time>0) {
@@ -3217,7 +3217,7 @@ public class Game implements XMLSaving {
 //		System.out.println(maxTime);
 		return maxTime;
 	}
-	
+
 	public String getWeatherImage() {
 		if (isDayTime()) {
 			switch (currentWeather) {
@@ -3234,7 +3234,7 @@ public class Game implements XMLSaving {
 				case MAGIC_STORM:
 					return SVGImages.SVG_IMAGE_PROVIDER.getWeatherDayStorm();
 			}
-			
+
 		} else {
 			switch (currentWeather) {
 				case CLEAR:
@@ -3263,7 +3263,7 @@ public class Game implements XMLSaving {
 		long hours = minutes/60;
 		return (hours/24)+" days, "+hours%24+" hours, "+minutes%60+" minutes";
 	}
-	
+
 	public void setWeatherInSeconds(Weather weather, int secondsRemaining) {
 		currentWeather = weather;
 		weatherTimeRemainingInSeconds = secondsRemaining;
@@ -3286,13 +3286,13 @@ public class Game implements XMLSaving {
 	public void setActiveWorld(World world, Vector2i location, boolean setDefaultDialogue) {
 //		activeWorld = world;
 		player.setLocation(world.getWorldType(), location, false);
-		
+
 		if(setDefaultDialogue) {
 			DialogueNode dn = Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true);
 			Main.game.setContent(new Response("", "", dn));
 		}
 	}
-	
+
 	public void setActiveWorld(World world, AbstractPlaceType placeType, boolean setDefaultDialogue) {
 		setActiveWorld(
 				world,
@@ -3315,12 +3315,12 @@ public class Game implements XMLSaving {
 	public long getMinutesPassed() {
 		return secondsPassed/60;
 	}
-	
+
 	public int getMinutesUntilNextMorningOrEvening() {
 		int minutesPassed = Main.game.getDayMinutes();
-		
+
 		LocalDateTime[] sunriseSunset = DateAndTime.getTimeOfSolarElevationChange(Main.game.getDateNow(), SolarElevationAngle.SUN_ALTITUDE_SUNRISE_SUNSET, Game.DOMINION_LATITUDE, Game.DOMINION_LONGITUDE);
-		
+
 		return (Main.game.isDayTime()
 				? (sunriseSunset[1].get(ChronoField.MINUTE_OF_DAY) - minutesPassed)
 				: (minutesPassed<sunriseSunset[0].get(ChronoField.MINUTE_OF_DAY)
@@ -3328,15 +3328,15 @@ public class Game implements XMLSaving {
 					:(24*60)+sunriseSunset[0].get(ChronoField.MINUTE_OF_DAY)) - minutesPassed)
 				+1;
 	}
-	
+
 	public LocalDateTime getStartingDate() {
 		return startingDate;
 	}
-	
+
 	public void applyStartingDateChange() {
 		startingDate = startingDate.plusYears(TIME_SKIP_YEARS);
 	}
-	
+
 	/**
 	 * Should only be used for debugging purposes.
 	 */
@@ -3354,7 +3354,7 @@ public class Game implements XMLSaving {
 			startingDate = startingDate.plusMonths(month.getValue() - startingDate.getMonthValue());
 		}
 	}
-	
+
 	public LocalDateTime getDateNow() {
 		return getStartingDate().plusSeconds(Main.game.getSecondsPassed());
 	}
@@ -3371,7 +3371,7 @@ public class Game implements XMLSaving {
 			}
 			return UtilText.parse("[style.colourMinorBad(Unknown date)]");
 		}
-		
+
 		if(withYear) {
 			return Units.date(getDateNow().minusYears(TIME_SKIP_YEARS), Units.DateType.LONG);
 		} else {
@@ -3379,7 +3379,7 @@ public class Game implements XMLSaving {
 			return date.substring(0, date.length()-5);
 		}
 	}
-	
+
 	public int getYear() {
 		return Main.game.getDateNow().getYear();
 	}
@@ -3387,11 +3387,11 @@ public class Game implements XMLSaving {
 	public long getHour() {
 		return Main.game.getMinutesPassed() / 60l;
 	}
-	
+
 	public int getHourOfDay() {
 		return (int) (getHour()%24);
 	}
-	
+
 	/**
 	 * @return The number of minutes that have passed in the current day.
 	 */
@@ -3405,7 +3405,7 @@ public class Game implements XMLSaving {
 	public int getDaySeconds() {
 		return (int) (getSecondsPassed()%(24*60*60));
 	}
-	
+
 	/**
 	 * @param desiredTime The targeted time, in minutes of the day. (i.e. a number from 0 to 1440)
 	 * @return The number of minutes it will take to reach this time, flowing over into the next day if necessary. Returned number will be at max 1439.
@@ -3417,7 +3417,7 @@ public class Game implements XMLSaving {
 		}
 		return timeDifference;
 	}
-	
+
 	/**
 	 * @return true If the hour is between 09:00 and 17:00.
 	 */
@@ -3438,18 +3438,18 @@ public class Game implements XMLSaving {
 	public boolean isSmallHours() {
 		return this.getHourOfDay()>=1 && this.getHourOfDay()<4;
 	}
-	
+
 	/**
 	 * @return true If the time is currently somewhere between sunrise and sunset.
 	 */
 	public boolean isDayTime() {
 		return getCurrentDayPeriod() == DayPeriod.DAY;
 	}
-	
+
 	public DayPeriod getCurrentDayPeriod() {
 		return DateAndTime.getDayPeriod(this.getDateNow(), Game.DOMINION_LATITUDE, Game.DOMINION_LONGITUDE);
 	}
-	
+
 	public boolean isMorning() {
 		return getMinutesPassed() % (24 * 60) >= 0 && getMinutesPassed() % (24 * 60) < (60 * 12);
 	}
@@ -3457,7 +3457,7 @@ public class Game implements XMLSaving {
 	public int getDayNumber() {
 		return getDayNumber(getSecondsPassed());
 	}
-	
+
 	private int getDayNumber(long seconds) {
 		return (int) (1 + (seconds / (24 * 60 * 60)));
 	}
@@ -3485,7 +3485,7 @@ public class Game implements XMLSaving {
 	public void setCurrentEncounter(Encounter currentEncounter) {
 		this.currentEncounter = currentEncounter;
 	}
-	
+
 	public NPC getNpc(Class<? extends NPC> npcClass) {
 		try {
 			return (NPC) this.getNPCById(getUniqueNPCId(npcClass));
@@ -3498,7 +3498,7 @@ public class Game implements XMLSaving {
 
 	public List<NPC> getOffspring(boolean includeNotBorn) {
 		List<NPC> offspring = new ArrayList<>();
-		
+
 		for(NPC npc : NPCMap.values()) {
 			if((npc.getMother()!=null && npc.getMother().isPlayer()) || (npc.getFather()!=null && npc.getFather().isPlayer())) {
 				if(npc.getMother()!=null) {
@@ -3510,15 +3510,15 @@ public class Game implements XMLSaving {
 				}
 			}
 		}
-		
+
 		return offspring;
 	}
-	
+
 	public List<NPC> getOffspringSpawned() {
 		List<NPC> offspringSpawned = new ArrayList<>(getOffspring(false));
-		
+
 		offspringSpawned.removeIf(npc -> npc.getWorldLocation()==WorldType.EMPTY);
-		
+
 		return offspringSpawned;
 	}
 
@@ -3529,53 +3529,53 @@ public class Game implements XMLSaving {
 										.filter(matcher).collect(Collectors.toList());
 		return offspringAvailable;
 	}
-	
+
 	public List<NPC> getReindeerOverseers() {
 		List<NPC> reindeerOverseers = new ArrayList<>(getAllNPCs());
-		
+
 		reindeerOverseers.removeIf(npc -> !npc.getClass().equals(ReindeerOverseer.class));
-		
+
 		return reindeerOverseers;
 	}
-	
+
 	public List<NPC> getAllNPCs() {
 		return new ArrayList<NPC>(NPCMap.values());
 	}
-	
+
 	public boolean isCharacterExisting(String id) {
 		return NPCMap.containsKey(id);
 	}
-	
+
 	public GameCharacter getNPCById(String id) throws Exception {
 		if(id==null || id.isEmpty()) {
 			throw new NullPointerException();
 //			return null;
 		}
-		
+
 		if(id.equals(Main.game.getPlayer().getId())) {
 			return Main.game.getPlayer();
 		}
 		if(!NPCMap.containsKey(id)) {
 			throw new NullPointerException();
-			
+
 //			if(!nullCharacterIds.contains(id)) {
 //				System.err.println("!WARNING! getNPC("+id+") is returning null! GenericAndrogynousNPC will be returned for all instances of this!");
 //				nullCharacterIds.add(id);
 //			}
-//			
+//
 //			if(Main.DEBUG) {
 //				new NullPointerException().printStackTrace();
 //			}
-//			
+//
 //			return Main.game.getNpc(GenericAndrogynousNPC.class);
 		}
 		return NPCMap.get(id);
 	}
-	
+
 	public Map<String, NPC> getNPCMap() {
 		return NPCMap;
 	}
-	
+
 	public String getUniqueNPCId(Class<? extends NPC> c) {
 		if(c.equals(DarkSiren.class)) {
 			return "-1,FortressDemonLeader";
@@ -3586,7 +3586,7 @@ public class Game implements XMLSaving {
 	public String getNPCId(Class<? extends NPC> c) {
 		return npcTally.get()+","+c.getSimpleName();
 	}
-	
+
 	public String getNextNPCId(Class<? extends NPC> c) {
 		return (npcTally.incrementAndGet())+","+c.getSimpleName();
 	}
@@ -3602,7 +3602,7 @@ public class Game implements XMLSaving {
 		return id;
 	}
 	public String addNPC(NPC npc, boolean isImported) throws Exception {
-		
+
 		if(isImported) {
 			int tallyCount;
 			String rawId = npc.getId();
@@ -3615,7 +3615,7 @@ public class Game implements XMLSaving {
 			}
 
 			npcTally.updateAndGet(x -> Math.max(x, tallyCount));
-			
+
 		} else {
 			if(npc.isUnique()) {
 				npc.setId(getUniqueNPCId(npc.getClass()));
@@ -3624,24 +3624,24 @@ public class Game implements XMLSaving {
 				npc.setId(id+","+(npc.getClass().getSimpleName()));
 			}
 		}
-		
+
 		if(NPCMap.keySet().contains(npc.getId())) {
 			throw new Exception("NPC map already contained an NPC with this Id ("+npc.getId()+"). SOMETHING HAS GONE HORRIBLY WRONG! PANIC!");
 		}
-		
+
 		if(isInNPCUpdateLoop) {
 			npcsToAdd.add(npc);
 		} else {
 			NPCMap.put(npc.getId(), npc);
 		}
-		
+
 		// Set locations after the NPC has the correct id:
 		npc.setLocation(npc.getWorldLocation(), npc.getLocation(), false);
 		npc.setHomeLocation(npc.getHomeWorldLocation(), npc.getHomeLocation());
-		
+
 		return npc.getId();
 	}
-	
+
 	/**
 	 * If the NPC has relationship stats with the player, don't delete entirely. Instead, move to PlaceType.GENERIC_EMPTY_TILE.
 	 * If the NPC has no stats related to the player, then remove them from the game.
@@ -3651,7 +3651,7 @@ public class Game implements XMLSaving {
 	public boolean banishNPC(NPC npc) {
 		Main.game.getPlayer().removeCompanion(npc);
 		npc.deleteAllEquippedClothing(true); // To cut down on save size and return unique items to the player.
-		
+
 		if(Main.game.getPlayer().getSexPartners().containsKey(npc.getId())
 				|| npc.getPregnantLitter()!=null
 				|| npc.getLastLitterBirthed()!=null
@@ -3660,13 +3660,13 @@ public class Game implements XMLSaving {
 				|| npc.isUnique()) {
 			npc.setLocation(WorldType.EMPTY, PlaceType.GENERIC_EMPTY_TILE, true);
 			return false;
-			
+
 		} else {
 			removeNPC(npc);
 			return true;
 		}
 	}
-	
+
 	public boolean banishNPC(String id) {
 		try {
 			NPC npc = (NPC) getNPCById(id);
@@ -3688,27 +3688,27 @@ public class Game implements XMLSaving {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void removeNPC(NPC npc) {
 		Main.game.getPlayer().removeCompanion(npc);
-		
+
 		if(npc.isPregnant()) {
 			npc.endPregnancy(false);
-			
+
 		} else if(npc.hasStatusEffect(StatusEffect.PREGNANT_0)) {
 			npc.removeStatusEffect(StatusEffect.PREGNANT_0);
 		}
-		
+
 		if(isInNPCUpdateLoop) {
 			npcsToRemove.add(npc);
-			
+
 		} else {
 			npc.getCell().removeCharacterPresentId(npc.getId());
 			npc.getHomeCell().removeCharacterHomeId(npc.getId());
 			NPCMap.remove(npc.getId());
 		}
 	}
-	
+
 	public int getNumberOfWitches() {
 		int i = 0;
 		for(NPC npc : NPCMap.values()) {
@@ -3718,7 +3718,7 @@ public class Game implements XMLSaving {
 		}
 		return i;
 	}
-	
+
 	public NPC getActiveNPC() {
 		return activeNPC;
 	}
@@ -3726,11 +3726,11 @@ public class Game implements XMLSaving {
 	public void setActiveNPC(NPC activeNPC) {
 		this.activeNPC = activeNPC;
 	}
-	
+
 	public boolean isStarted() {
 		return started;
 	}
-	
+
 	public boolean isPrologueFinished() {
 		return getPlayer()!=null && getPlayer().hasQuest(QuestLine.MAIN) && getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_PROLOGUE);
 	}
@@ -3745,7 +3745,7 @@ public class Game implements XMLSaving {
 				&& Main.game.getPlayer().getWorldLocation()!=WorldType.MUSEUM
 					&& Main.game.getPlayer().getWorldLocation()!=WorldType.MUSEUM_LOST;
 	}
-	
+
 	public StringBuilder getTextStartStringBuilder() {
 		return textStartStringBuilder;
 	}
@@ -3812,7 +3812,7 @@ public class Game implements XMLSaving {
 	public boolean isSavedDialogueNeutral() {
 		return Main.game.getSavedDialogueNode().equals(Main.game.getPlayer().getLocationPlace().getDialogue(false));
 	}
-	
+
 	public Cell getPlayerCell() {
 		return Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation());
 	}
@@ -3820,7 +3820,7 @@ public class Game implements XMLSaving {
 	public DialogueFlags getDialogueFlags() {
 		return dialogueFlags;
 	}
-	
+
 	public int getResponsePointer() {
 		return responsePointer;
 	}
@@ -3828,7 +3828,7 @@ public class Game implements XMLSaving {
 	public void setResponsePointer(int responsePointer) {
 		this.responsePointer = responsePointer;
 	}
-	
+
 	public boolean isPlayerTileFull() {
 		return getActiveWorld().getCell(getPlayer().getLocation()).getInventory().isInventoryFull();
 	}
@@ -3837,15 +3837,15 @@ public class Game implements XMLSaving {
 	public boolean isDebugMode() {
 		return Main.getProperties().hasValue(PropertyValue.debugMode);
 	}
-	
+
 	public String runXmlTest(String pathName) {
 		return UtilText.runXmlTest(pathName);
 	}
-	
+
 	public boolean isMapReveal() {
 		return Main.getProperties().hasValue(PropertyValue.mapReveal);
 	}
-	
+
 	public boolean isConcealedSlotsReveal() {
 		return Main.getProperties().hasValue(PropertyValue.concealedSlotsReveal);
 	}
@@ -3857,47 +3857,47 @@ public class Game implements XMLSaving {
 	public boolean isLevelDrainContentEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.levelDrain);
 	}
-	
+
 	public boolean isSillyModeEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.sillyMode);
 	}
-	
+
 	public boolean isNonConEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.nonConContent);
 	}
-	
+
 	public boolean isNipplePenEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.nipplePenContent);
 	}
-	
+
 	public boolean isUrethraEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.urethralContent);
 	}
-	
+
 	public boolean isIncestEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.incestContent);
 	}
-	
+
 	public boolean isFacialHairEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.facialHairContent);
 	}
-	
+
 	public boolean isFemaleFacialHairEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.feminineBeardsContent);
 	}
-	
+
 	public boolean isPubicHairEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.pubicHairContent);
 	}
-	
+
 	public boolean isBodyHairEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.bodyHairContent);
 	}
-	
+
 	public boolean isAssHairEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.assHairContent);
 	}
-	
+
 	public boolean isVoluntaryNTREnabled() {
 		return Main.getProperties().hasValue(PropertyValue.voluntaryNTR);
 	}
@@ -3914,10 +3914,14 @@ public class Game implements XMLSaving {
 		return Main.getProperties().hasValue(PropertyValue.analContent);
 	}
 
+	public boolean isRimmingContentEnabled() {
+		return Main.getProperties().hasValue(PropertyValue.rimmingContent);
+	}
+
 	public boolean isGapeContentEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.gapeContent);
 	}
-	
+
 	public boolean isFootContentEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.footContent);
 	}
@@ -3929,12 +3933,12 @@ public class Game implements XMLSaving {
 	public boolean isCrotchBoobContentEnabled() {
 		return Main.getProperties().udders>0;
 	}
-	
+
 	public boolean isPlotDiscovered() {
 		return Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_2_D_MEETING_A_LILIN);
 	}
-	
-	
+
+
 	public boolean isRenderMap() {
 		return renderMap;
 	}
@@ -3942,7 +3946,7 @@ public class Game implements XMLSaving {
 	public void setRenderMap(boolean renderMap) {
 		this.renderMap = renderMap;
 	}
-	
+
 	public boolean isInGlobalMap() {
 		return this.getPlayer().getLocationPlace().getPlaceType().isGlobalMapTile();
 	}
@@ -3950,22 +3954,22 @@ public class Game implements XMLSaving {
 	public List<EventLogEntry> getEventLog() {
 		return eventLog;
 	}
-	
+
 	public void addEvent(EventLogEntry event, boolean appendAdditionTextToMainDialogue) {
 		eventLog.add(event);
 		if(appendAdditionTextToMainDialogue) {
 			Main.game.getTextEndStringBuilder().append(event.getMainDialogueDescription());
 		}
 	}
-	
+
 	public void setEventLog(List<EventLogEntry> eventLog) {
 		this.eventLog = eventLog;
 	}
-	
+
 	public SizedStack<Value<Integer, List<SlaveryEventLogEntry>>> getSlaveryEventLog() {
 		return slaveryEventLog;
 	}
-	
+
 	public List<SlaveryEventLogEntry> getSlaveryEvents(int day) {
 		for(Value<Integer, List<SlaveryEventLogEntry>> value : slaveryEventLog) {
 			if(value.getKey()==day) {
@@ -3974,7 +3978,7 @@ public class Game implements XMLSaving {
 		}
 		return null;
 	}
-	
+
 	public void addSlaveryEvent(int day, SlaveryEventLogEntry event) {
 		for(Value<Integer, List<SlaveryEventLogEntry>> value : slaveryEventLog) {
 			if(value.getKey()==day) {
@@ -3984,7 +3988,7 @@ public class Game implements XMLSaving {
 		}
 		slaveryEventLog.push(new Value<>(day, Util.newArrayListOfValues(event)));
 	}
-	
+
 
 	public int getNpcTally() {
 		return npcTally.get();
@@ -3993,14 +3997,14 @@ public class Game implements XMLSaving {
 	public OccupancyUtil getOccupancyUtil() {
 		return occupancyUtil;
 	}
-	
+
 	/**
 	 *  Be careful using this, as it has a chance to trigger the tile's random encounter.
 	 */
 	public DialogueNode getDefaultDialogue() {
 		return Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(true);
 	}
-	
+
 	public DialogueNode getDefaultDialogue(boolean withRandomEncounter) {
 		return Main.game.getActiveWorld().getCell(Main.game.getPlayer().getLocation()).getPlace().getDialogue(withRandomEncounter);
 	}
@@ -4022,15 +4026,15 @@ public class Game implements XMLSaving {
 	public boolean isSpittingDisabled() {
 		return !Main.getProperties().hasValue(PropertyValue.spittingEnabled);
 	}
-	
+
 	public boolean isOpportunisticAttackersEnabled() {
 		return Main.getProperties().hasValue(PropertyValue.opportunisticAttackers);
 	}
-	
+
 	public boolean isBypassSexActions() {
 		return Main.getProperties().hasValue(PropertyValue.bypassSexActions);
 	}
-	
+
 	public boolean isBraxMainQuestComplete() {
 		return Main.game.getPlayer().isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_1_C_WOLFS_DEN);
 	}
