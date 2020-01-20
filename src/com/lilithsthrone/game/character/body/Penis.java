@@ -1,5 +1,5 @@
 package com.lilithsthrone.game.character.body;
-import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +28,7 @@ import com.lilithsthrone.utils.Util;
  */
 public class Penis implements BodyPartInterface {
 
-	
+
 	public static final float TWO_PENIS_SIZE_MULTIPLIER = 1.6f;
 
 	protected PenisType type;
@@ -37,7 +37,7 @@ public class Penis implements BodyPartInterface {
 	protected boolean pierced;
 	protected boolean virgin;
 	protected Set<PenetrationModifier> penisModifiers;
-	
+
 	protected Testicle testicle;
 	protected OrificePenisUrethra orificeUrethra;
 
@@ -51,11 +51,11 @@ public class Penis implements BodyPartInterface {
 		this.girth = Math.min(PenisGirth.FOUR_FAT.getValue(), girth);
 		pierced = false;
 		virgin = true;
-		
+
 		testicle = new Testicle(type.getTesticleType(), testicleSize, cumProduction, testicleCount);
-		
+
 		orificeUrethra = new OrificePenisUrethra(testicle.getCumStorage().getAssociatedWetness().getValue(), 0, OrificeElasticity.ZERO_UNYIELDING.getValue(), OrificePlasticity.THREE_RESILIENT.getValue(), true, new ArrayList<>());
-		
+
 		this.penisModifiers = new HashSet<>();
 		this.penisModifiers.addAll(type.getDefaultPenisModifiers());
 	}
@@ -64,15 +64,15 @@ public class Penis implements BodyPartInterface {
 	public PenisType getType() {
 		return type;
 	}
-	
+
 	public Testicle getTesticle() {
 		return testicle;
 	}
-	
+
 	public OrificePenisUrethra getOrificeUrethra() {
 		return orificeUrethra;
 	}
-	
+
 	@Override
 	public String getDeterminer(GameCharacter gc) {
 		return type.getDeterminer(gc);
@@ -82,7 +82,7 @@ public class Penis implements BodyPartInterface {
 	public String getName(GameCharacter gc) {
 		return type.getName(gc);
 	}
-	
+
 	@Override
 	public String getNameSingular(GameCharacter gc) {
 		return type.getNameSingular(gc);
@@ -96,7 +96,7 @@ public class Penis implements BodyPartInterface {
 	@Override
 	public String getDescriptor(GameCharacter owner) {
 		List<String> list = new ArrayList<>();
-        
+
 		for(PenetrationModifier pm : penisModifiers) {
 			if(!Main.game.isInSex() && pm!=PenetrationModifier.SHEATHED) {
 				list.add(pm.getName());
@@ -106,7 +106,7 @@ public class Penis implements BodyPartInterface {
 		if(owner.getPenisCovering()!=null) {
 			list.add(owner.getCovering(owner.getPenisCovering()).getColourDescriptor(owner, false, false));
 		}
-		
+
 		if(owner.isPenisBestial()) {
 			list.add(Util.randomItemFrom(Util.newArrayListOfValues(
 					"feral",
@@ -116,12 +116,14 @@ public class Penis implements BodyPartInterface {
 		} else {
 			list.add(type.getDescriptor(owner));
 		}
-		
+
 		if(Main.game.isInSex() && Main.sex.getAllParticipants().contains(owner)) {
 			if(owner.hasErection()) {
-				list.add("hard");
+			        list.add("hard");
+				list.add("erect");
 				if(this.getType()!=PenisType.DILDO) {
 					list.add("throbbing");
+					list.add("stiff");
 				}
 			} else {
 				list.add("soft");
@@ -134,35 +136,35 @@ public class Penis implements BodyPartInterface {
 
 		return Util.randomItemFrom(list);
 	}
-	
+
 	public String getUrethraDescriptor(GameCharacter owner) {
 		List<String> descriptorList = new ArrayList<>();
-		
+
 		for(OrificeModifier om : orificeUrethra.getOrificeModifiers()) {
 			descriptorList.add(om.getName());
 		}
-		
+
 		descriptorList.add(type.getDescriptor(owner));
-		
+
 		descriptorList.add(Capacity.getCapacityFromValue(orificeUrethra.getStretchedCapacity()).getDescriptor().replaceAll(" ", "-"));
 
 		return Util.randomItemFrom(descriptorList);
 	}
-	
+
 	public String getPenisHeadName(GameCharacter gc) {
 		List<String> list = new ArrayList<>();
 		list.add("head");
-        
+
 		if(penisModifiers.contains(PenetrationModifier.TAPERED)) {
 			list.add("tip");
 		}
 
 		return Util.randomItemFrom(list);
 	}
-	
+
 	public String getPenisHeadDescriptor(GameCharacter gc) {
 		List<String> list = new ArrayList<>();
-        
+
 		if(penisModifiers.contains(PenetrationModifier.TAPERED)) {
 			list.add("tapered");
 			list.add("pointed");
@@ -175,12 +177,12 @@ public class Penis implements BodyPartInterface {
 
 		return Util.randomItemFrom(list);
 	}
-	
+
 	public String setType(GameCharacter owner, PenisType type) {
 		if(this.type==PenisType.NONE) {
 			this.orificeUrethra.setStretchedCapacity(this.orificeUrethra.getRawCapacityValue());
 		}
-		
+
 		if(!Main.game.isStarted() || owner==null) {
 			this.type = type;
 			testicle.setType(owner, type.getTesticleType());
@@ -191,7 +193,7 @@ public class Penis implements BodyPartInterface {
 			}
 			return "";
 		}
-		
+
 		if (type == getType()) {
 			if(owner.isPlayer()) {
 				if(type==PenisType.NONE) {
@@ -206,10 +208,10 @@ public class Penis implements BodyPartInterface {
 					return UtilText.parse(owner, "<p style='text-align:center;'>[style.colourDisabled([npc.Name] already has [npc.a_cockRace]'s cock, so nothing happens...)]</p>");
 				}
 			}
-			
+
 		} else {
 			UtilText.transformationContentSB.setLength(0);
-			
+
 			if (owner.getPenisType() == PenisType.NONE) {
 				if(size<1) {
 					size = 1;
@@ -230,7 +232,7 @@ public class Penis implements BodyPartInterface {
 											:"beneath [npc.her] feminine slit")
 										: "in the middle of [npc.her] groin,")
 								+ " and with a sudden splitting sensation, the bump pushes out and forms into a penis.");
-				
+
 				if(owner.isInternalTesticles()) {
 					UtilText.transformationContentSB.append(
 							" As [npc.her] new cock flops down "
@@ -250,7 +252,7 @@ public class Penis implements BodyPartInterface {
 									: "between [npc.her] legs, [npc.she] [npc.verb(feel)] [npc.a_balls] push out underneath the base of [npc.her] new shaft,")
 							+ " and [npc.she] [npc.verb(let)] out an unwitting [npc.moan] as [npc.her] new sexual organ finishes growing.<br/>");
 				}
-				
+
 			} else {
 				if (owner.isPlayer()) {
 					UtilText.transformationContentSB.append(
@@ -272,7 +274,7 @@ public class Penis implements BodyPartInterface {
 		testicle.setType(owner, type.getTesticleType());
 		owner.resetAreaKnownByCharacters(CoverableArea.PENIS);
 		owner.resetAreaKnownByCharacters(CoverableArea.TESTICLES);
-		
+
 		switch (type) {
 			case DILDO:
 				return "You have somehow transformed your penis into a dildo... This is a bug... (Please let Innoxia know!)";
@@ -532,7 +534,7 @@ public class Penis implements BodyPartInterface {
 					"<br/>"
 					+ "Any old modifiers that [npc.her] penis might have had have [style.boldShrink(transformed away)]!");
 		}
-		
+
 		if(penisModifiers.isEmpty()) {
 			UtilText.transformationContentSB.append("</p>");
 		} else {
@@ -545,21 +547,21 @@ public class Penis implements BodyPartInterface {
 						"<br/>"
 						+ "Instead, [npc.her] new cock is:");
 			}
-			
+
 			for(PenetrationModifier pm : penisModifiers) {
 				UtilText.transformationContentSB.append("<br/>[style.boldGrow("+Util.capitaliseSentence(pm.getName())+")]");
 			}
 			UtilText.transformationContentSB.append("</p>");
 		}
-		
+
 		String postTF = owner.postTransformationCalculation(false); // Calculate this before parsing, as it updates covering colours
-		
+
 		return UtilText.parse(owner, UtilText.transformationContentSB.toString())
 				+ "<p>"
 				+ postTF
 				+ "</p>";
 	}
-	
+
 	// Girth:
 
 	public PenisGirth getGirth() {
@@ -578,13 +580,13 @@ public class Penis implements BodyPartInterface {
 			this.girth = Math.max(0, Math.min(girth, PenisGirth.FOUR_FAT.getValue()));
 			return "";
 		}
-		
+
 		if(!owner.hasPenisIgnoreDildo()) {
 			return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 		}
-		
+
 		int girthChange = 0;
-		
+
 		if (girth <= 0) {
 			if (this.girth != 0) {
 				girthChange = 0 - this.girth;
@@ -601,7 +603,7 @@ public class Penis implements BodyPartInterface {
 				this.girth = girth;
 			}
 		}
-		
+
 		if(girthChange == 0) {
 			if(owner.isPlayer()) {
 				return "<p style='text-align:center;'>[style.colourDisabled(The girth of your [pc.cock] doesn't change...)]</p>";
@@ -609,7 +611,7 @@ public class Penis implements BodyPartInterface {
 				return UtilText.parse(owner, "<p style='text-align:center;'>[style.colourDisabled(The girth of [npc.namePos] [npc.cock] doesn't change...)]</p>");
 			}
 		}
-		
+
 		if (girthChange > 0) {
 			if (owner.isPlayer()) {
 				return "<p>"
@@ -644,7 +646,7 @@ public class Penis implements BodyPartInterface {
 			}
 		}
 	}
-	
+
 	// Size:
 
 	public PenisSize getSize() {
@@ -662,9 +664,9 @@ public class Penis implements BodyPartInterface {
 		if(owner!=null && !owner.hasPenisIgnoreDildo()) {
 			return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 		}
-		
+
 		int sizeChange = 0;
-		
+
 		if (size <= 0) {
 			if (this.size != 0) {
 				sizeChange = 0 - this.size;
@@ -681,11 +683,11 @@ public class Penis implements BodyPartInterface {
 				this.size = size;
 			}
 		}
-		
+
 		if(owner==null) {
 			return "";
 		}
-		
+
 		if(sizeChange == 0) {
 			if(owner.isPlayer()) {
 				return "<p style='text-align:center;'>[style.colourDisabled(The size of your [pc.cock] doesn't change...)]</p>";
@@ -693,7 +695,7 @@ public class Penis implements BodyPartInterface {
 				return UtilText.parse(owner, "<p style='text-align:center;'>[style.colourDisabled(The size of [npc.namePos] [npc.cock] doesn't change...)]</p>");
 			}
 		}
-		
+
 		if (sizeChange > 0) {
 			if (owner.isPlayer()) {
 				return "<p>"
@@ -728,7 +730,7 @@ public class Penis implements BodyPartInterface {
 			}
 		}
 	}
-	
+
 	public boolean isPierced() {
 		return pierced;
 	}
@@ -737,9 +739,9 @@ public class Penis implements BodyPartInterface {
 		if(this.pierced == pierced || !owner.hasPenisIgnoreDildo()) {
 			return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 		}
-		
+
 		this.pierced = pierced;
-		
+
 		if(pierced) {
 			if(owner.isPlayer()) {
 				return "<p>Your [pc.cock] is now [style.boldGrow(pierced)]!</p>";
@@ -747,7 +749,7 @@ public class Penis implements BodyPartInterface {
 				return UtilText.parse(owner,
 						"<p>[npc.NamePos] [npc.cock] is now [style.boldGrow(pierced)]!</p>");
 			}
-			
+
 		} else {
 			AbstractClothing c = owner.getClothingInSlot(InventorySlot.PIERCING_PENIS);
 			String piercingUnequip = "";
@@ -755,7 +757,7 @@ public class Penis implements BodyPartInterface {
 				owner.forceUnequipClothingIntoVoid(owner, c);
 				piercingUnequip = owner.addClothing(c, false);
 			}
-			
+
 			if(owner.isPlayer()) {
 				return "<p>"
 							+ "Your [pc.cock] is [style.boldShrink(no longer pierced)]!"
@@ -770,7 +772,7 @@ public class Penis implements BodyPartInterface {
 			}
 		}
 	}
-	
+
 	public boolean isVirgin() {
 		return virgin;
 	}
@@ -778,11 +780,11 @@ public class Penis implements BodyPartInterface {
 	public void setVirgin(boolean virgin) {
 		this.virgin = virgin;
 	}
-	
+
 	public Set<PenetrationModifier> getPenisModifiers() {
 		return penisModifiers;
 	}
-	
+
 	public boolean hasPenisModifier(PenetrationModifier modifier) {
 		return penisModifiers.contains(modifier);
 	}
@@ -791,12 +793,12 @@ public class Penis implements BodyPartInterface {
 		if(hasPenisModifier(modifier)) {
 			return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 		}
-		
+
 		if(owner==null || owner.getBody()==null) {
 			penisModifiers.add(modifier);
 			return "";
 		}
-		
+
 		if(!owner.hasPenisIgnoreDildo()) {
 			if(owner.isPlayer()) {
 				return "<p style='text-align:center;'>[style.colourDisabled(You don't have a penis, so nothing happens...)]</p>";
@@ -804,9 +806,9 @@ public class Penis implements BodyPartInterface {
 				return UtilText.parse(owner, "<p style='text-align:center;'>[style.colourDisabled([npc.Name] doesn't have a penis, so nothing happens...)]</p>");
 			}
 		}
-		
+
 		penisModifiers.add(modifier);
-		
+
 		switch(modifier) {
 			case RIBBED:
 				if(owner.isPlayer()) {
@@ -931,7 +933,7 @@ public class Penis implements BodyPartInterface {
 							+ "</p>";
 				}
 		}
-		
+
 		// Catch:
 		return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 	}
@@ -940,9 +942,9 @@ public class Penis implements BodyPartInterface {
 		if(!hasPenisModifier(modifier)) {
 			return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 		}
-		
+
 		penisModifiers.remove(modifier);
-		
+
 		switch(modifier) {
 			case RIBBED:
 				if(owner.isPlayer()) {
@@ -1065,11 +1067,11 @@ public class Penis implements BodyPartInterface {
 							+ "</p>";
 				}
 		}
-		
+
 		// Catch:
 		return "<p style='text-align:center;'>[style.colourDisabled(Nothing happens...)]</p>";
 	}
-	
+
 	public void clearPenisModifiers() {
 		penisModifiers.clear();
 	}
