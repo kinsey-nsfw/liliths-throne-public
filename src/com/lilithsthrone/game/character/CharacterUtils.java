@@ -119,6 +119,7 @@ import com.lilithsthrone.game.inventory.item.AbstractItem;
 import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeapon;
+import com.lilithsthrone.game.settings.DifficultyLevel;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Colour;
 import com.lilithsthrone.utils.ColourListPresets;
@@ -1554,36 +1555,66 @@ public class CharacterUtils {
 		for(PersonalityTrait trait : character.getPersonalityTraits()) {
 			switch(trait) {
 				case BRAVE:
-					characterAdjectives.add("daring");
 					characterAdjectives.add("fearless");
-					characterAdjectives.add("brash");
-					characterAdjectives.add("cocky");
+					if(!character.isShy()) {
+					    characterAdjectives.add("daring");
+					    characterAdjectives.add("brash");
+					    characterAdjectives.add("cocky");
+					}
 					break;
 				case COWARDLY:
-					characterAdjectives.add("suspicious");
+				        if(!character.isKind()) {
+					    characterAdjectives.add("suspicious");
+					}
 					characterAdjectives.add("cowardly");
+					if(!character.isConfident()) {
+					    characterAdjectives.add("nervous");
+					}
 					break;
 				case CONFIDENT:
 					characterAdjectives.add("excitable");
 					characterAdjectives.add("energetic");
-					characterAdjectives.add("playful");
+					characterAdjectives.add("cheeky");
+					if(character.isKind() || (!character.isPrude())) {
+					    characterAdjectives.add("playful");
+					}
 					break;
 				case KIND:
+				        if(!character.isPrude()) {
+					    characterAdjectives.add("pleasant");
+					}
 					break;
 				case LEWD:
 					characterAdjectives.add("lewd");
 					characterAdjectives.add("crass");
 					characterAdjectives.add("vulgar");
 					characterAdjectives.add("licentious");
+					characterAdjectives.add("leering");
 					break;
 				case PRUDE:
-					characterAdjectives.add("prude");
+					characterAdjectives.add("prudish");
+					if(!character.isKind()) {
+					    characterAdjectives.add("stern");
+					    if(!character.isShy()) {
+						characterAdjectives.add("smug");
+					    }
+					}
 					break;
 				case SELFISH:
 					characterAdjectives.add("rude");
+					if(character.isLewd()) {
+					    characterAdjectives.add("crass");
+					    characterAdjectives.add("vulgar");
+					}
+					if(!character.isShy()) {
+					    characterAdjectives.add("smug");
+					}
 					break;
 				case SHY:
-					characterAdjectives.add("nervous");
+				        if(!character.isBrave()) {
+					    characterAdjectives.add("nervous");
+					    characterAdjectives.add("uncertain");
+					}
 					characterAdjectives.add("shy");
 					break;
 //				case BIMBO:
@@ -1597,6 +1628,10 @@ public class CharacterUtils {
 				case MUTE:
 					break;
 				case INNOCENT:
+				        if(!(character.isBrave() || character.isConfident())) {
+					    characterAdjectives.add("nervous");
+					}
+					characterAdjectives.add("wide-eyed");
 					break;
 			}
 		}
@@ -1688,15 +1723,22 @@ public class CharacterUtils {
 			character.setHeight(Math.max(Height.ZERO_TINY.getMinimumValue(), height));
 		}
 
+		float chanceAddictive = 0.005f*Main.getProperties().difficultyLevel.getDamageModifierNPC();
+		if(Main.getProperties().difficultyLevel.isNPCLevelScaling()) {
+		    chanceAddictive *= 2;
+		}
+		float chanceHallucinogenic = Math.max(0.02f,(0.04f-chanceAddictive));
+
 		//Breasts:
 		if(character.hasBreasts()) {
 			character.setBreastSize(Math.max(CupSize.AA.getMeasurement(), character.getBreastSize().getMeasurement() -2 + Util.random.nextInt(5))); // Random size between -2 and +2 of base value.
-			if(Math.random()<=0.015f || character.hasFetish(Fetish.FETISH_LACTATION_SELF)) {
+			if(Main.game.isLactationContentEnabled() &&
+			   (Math.random()<=0.015f || character.hasFetish(Fetish.FETISH_LACTATION_SELF))) {
 				character.setBreastMilkStorage((int)((character.getBreastSize().getMeasurement() * 5)*(1+(Math.random()*2))));
-				if(Math.random()<=0.025f) {
+				if(Math.random()<=(chanceAddictive+0.005f)) {
 					character.addMilkModifier(FluidModifier.ADDICTIVE);
 				}
-				if(Math.random()<=0.025f) {
+				if(Math.random()<=(chanceHallucinogenic+0.005f)) {
 					character.addMilkModifier(FluidModifier.HALLUCINOGENIC);
 				}
 			}
@@ -1714,12 +1756,13 @@ public class CharacterUtils {
 				character.setBreastCrotchSize(Math.min(character.getBreastCrotchRawSizeValue(), character.getBreastRawSizeValue()-(character.getBreastRows())));
 			}
 
-			if(Math.random()<=0.015f || character.hasFetish(Fetish.FETISH_LACTATION_SELF)) {
+			if(Main.game.isLactationContentEnabled() &&
+			   (Math.random()<=0.015f || character.hasFetish(Fetish.FETISH_LACTATION_SELF))) {
 				character.setBreastCrotchMilkStorage((int)((character.getBreastCrotchSize().getMeasurement() * 5)*(1+(Math.random()*2))));
-				if(Math.random()<=0.025f) {
+				if(Math.random()<=(chanceAddictive+0.005f)) {
 					character.addMilkCrotchModifier(FluidModifier.ADDICTIVE);
 				}
-				if(Math.random()<=0.025f) {
+				if(Math.random()<=(chanceHallucinogenic+0.005f)) {
 					character.addMilkCrotchModifier(FluidModifier.HALLUCINOGENIC);
 				}
 			}
@@ -1794,10 +1837,10 @@ public class CharacterUtils {
 				character.fillCumToMaxStorage();
 			}
 
-			if(Math.random()<=0.02f) {
+			if(Math.random()<=chanceAddictive) {
 				character.addCumModifier(FluidModifier.ADDICTIVE);
 			}
-			if(Math.random()<=0.02f) {
+			if(Math.random()<=chanceHallucinogenic) {
 				character.addCumModifier(FluidModifier.HALLUCINOGENIC);
 			}
 		}
@@ -1822,10 +1865,10 @@ public class CharacterUtils {
 				}
 			}
 			character.setVaginaWetness(character.getVaginaWetness().getValue() -1 + Util.random.nextInt(3)); // +1 or -1 either way
-			if(Math.random()<=0.02f) {
+			if(Math.random()<=chanceAddictive) {
 				character.addGirlcumModifier(FluidModifier.ADDICTIVE);
 			}
-			if(Math.random()<=0.02f) {
+			if(Math.random()<=chanceHallucinogenic) {
 				character.addGirlcumModifier(FluidModifier.HALLUCINOGENIC);
 			}
 		}
@@ -1955,12 +1998,14 @@ public class CharacterUtils {
 					allowedFetishes.add(f);
 
 			} else if (f==Fetish.FETISH_BIMBO) {
-				if(character.isFeminine())
+				if(character.isFeminine()) // ???
 					allowedFetishes.add(f);
 
 			} else if (f==Fetish.FETISH_PREGNANCY || f==Fetish.FETISH_VAGINAL_RECEIVING) {
-				if(character.hasVagina())
-					allowedFetishes.add(f);
+			        if(character.hasVagina() ||
+				   (f==Fetish.FETISH_PREGNANCY && character.getRace()==Race.SLIME)) {
+				        allowedFetishes.add(f);
+				}
 
 			} else if (f==Fetish.FETISH_IMPREGNATION) {
 				if(character.hasPenis() && character.sexualOrientation!=SexualOrientation.ANDROPHILIC)
@@ -1976,17 +2021,27 @@ public class CharacterUtils {
 
 			// Fetishes for content locks:
 			} else if (f==Fetish.FETISH_NON_CON_DOM || f==Fetish.FETISH_NON_CON_SUB) {
-				if(Main.getProperties().hasValue(PropertyValue.nonConContent)) {
+			        if(Main.game.isNonConEnabled()) {
 					allowedFetishes.add(f);
 				}
 
 			} else if (f==Fetish.FETISH_INCEST) {
-				if(Main.getProperties().hasValue(PropertyValue.incestContent))
+			        if(Main.game.isIncestEnabled())
 					allowedFetishes.add(f);
 
+			} else if (f==Fetish.FETISH_ANAL_GIVING || f==Fetish.FETISH_ANAL_RECEIVING) {
+			        if(Main.game.isAnalContentEnabled())
+				        allowedFetishes.add(f);
+
+			} else if (f==Fetish.FETISH_FOOT_GIVING || f==Fetish.FETISH_FOOT_RECEIVING) {
+			        if(Main.game.isFootContentEnabled())
+				        allowedFetishes.add(f);
+
 			} else if (f==Fetish.FETISH_LACTATION_OTHERS || f==Fetish.FETISH_LACTATION_SELF) {
-				if(Main.getProperties().hasValue(PropertyValue.lactationContent))
-					allowedFetishes.add(f);
+			         if(Main.game.isLactationContentEnabled() &&
+				    (f==Fetish.FETISH_LACTATION_OTHERS || character.hasBreasts())) {
+				     allowedFetishes.add(f);
+				 }
 
 			} else if (f.getFetishesForAutomaticUnlock().isEmpty()){
 				allowedFetishes.add(f);
@@ -2008,13 +2063,29 @@ public class CharacterUtils {
 		availableFetishes.removeAll(character.getFetishes(false));
 		availableFetishes.removeAll(Arrays.asList(exclusions));
 
-		int[] numberProb = new int[] {1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5};
+		int[] numberProb = new int[] {1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5}; // Should higher-base-corruption races have more?
 		int numberOfFetishes = Util.randomItemFrom(numberProb) - character.getFetishes(false).size();
 
 		int fetishesAssigned = 0;
 
 		if(((character.getMother()!=null && character.getMother().isPlayer()) || (character.getFather()!=null && character.getFather().isPlayer()))) {
-			if(Main.getProperties().hasValue(PropertyValue.incestContent) && Math.random()>0.5f) {
+		        if(availableFetishes.contains(Fetish.FETISH_INCEST) &&
+			   (Math.random()>0.5f || // decrease given the below?
+			    (character.getMother()!=null && (character.getMother().hasFetish(Fetish.FETISH_INCEST) ||
+							     (character.getMother().isPlayer() &&
+							      character.getMother().getFetishDesire(Fetish.FETISH_INCEST).isPositive())) &&
+			     (!(Main.game.isNonConEnabled() && character.getMother().hasBaseFetish(Fetish.FETISH_NON_CON_DOM))) &&
+			     (character.isAttractedTo(character.getMother().getGender()) ||
+			      (character.getMother().getGenderIdentity()!=null && character.isAttractedTo(character.getMother().getGenderIdentity()))) &&
+			     character.getMother().isAttractedTo(character.getGender())) ||
+			    (character.getFather()!=null && (character.getFather().hasFetish(Fetish.FETISH_INCEST) ||
+							     (character.getFather().isPlayer() &&
+							      character.getFather().getFetishDesire(Fetish.FETISH_INCEST).isPositive())) &&
+			     (!(Main.game.isNonConEnabled() && character.getFather().hasBaseFetish(Fetish.FETISH_NON_CON_DOM))) &&
+			     (character.isAttractedTo(character.getFather().getGender()) ||
+			      (character.getFather().getGenderIdentity()!=null && character.isAttractedTo(character.getFather().getGenderIdentity()))) &&
+			     character.getFather().isAttractedTo(character.getGender()))
+			    )) {
 				character.addFetish(Fetish.FETISH_INCEST);
 				availableFetishes.remove(Fetish.FETISH_INCEST);
 				fetishesAssigned++;
@@ -2033,6 +2104,9 @@ public class CharacterUtils {
 			availableFetishes.remove(Fetish.FETISH_KINK_GIVING);
 		}
 
+		// The below are a rather crude way of increasing likelihoods - a weighted map would enable, for instance,
+		// level of cum production/expulsion smoothly relating to likelihood of FETISH_CUM_STUD... need to work on!
+
 		if(character.getRace()==Race.COW_MORPH && availableFetishes.contains(Fetish.FETISH_BREASTS_SELF)) {
 			availableFetishes.add(Fetish.FETISH_BREASTS_SELF);
 			availableFetishes.add(Fetish.FETISH_BREASTS_SELF);
@@ -2041,14 +2115,12 @@ public class CharacterUtils {
 			availableFetishes.add(Fetish.FETISH_BREASTS_SELF);
 		}
 
-		if(!Main.getProperties().hasValue(PropertyValue.analContent)) {
-			availableFetishes.remove(Fetish.FETISH_ANAL_GIVING);
-			availableFetishes.remove(Fetish.FETISH_ANAL_RECEIVING);
-		}
-
-		if(!Main.getProperties().hasValue(PropertyValue.footContent)) {
-			availableFetishes.remove(Fetish.FETISH_FOOT_GIVING);
-			availableFetishes.remove(Fetish.FETISH_FOOT_RECEIVING);
+		if(character.getRace()==Race.SLIME && availableFetishes.contains(Fetish.FETISH_CUM_ADDICT)) { // or should this be as per RABBIT_MORPH?
+			availableFetishes.add(Fetish.FETISH_CUM_ADDICT);
+			availableFetishes.add(Fetish.FETISH_CUM_ADDICT);
+			availableFetishes.add(Fetish.FETISH_CUM_ADDICT);
+			availableFetishes.add(Fetish.FETISH_CUM_ADDICT);
+			availableFetishes.add(Fetish.FETISH_CUM_ADDICT);
 		}
 
 		while(fetishesAssigned < numberOfFetishes && !availableFetishes.isEmpty()) {
@@ -2056,46 +2128,33 @@ public class CharacterUtils {
 			character.addFetish(f);
 			while(availableFetishes.remove(f)) {}
 			fetishesAssigned++;
+			// Note that there are some alterations that are logical here - no DENIAL_SELF if IMPREGNATION, for instance
 		}
 
-		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && character.hasVagina()) {
+		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && availableFetishes.contains(Fetish.FETISH_PREGNANCY)) {
 			character.addFetish(Fetish.FETISH_PREGNANCY);
+			availableFetishes.remove(Fetish.FETISH_PREGNANCY);
 		}
-		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && character.hasPenis()) {
+		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && availableFetishes.contains(Fetish.FETISH_IMPREGNATION)) {
 			character.addFetish(Fetish.FETISH_IMPREGNATION);
+			availableFetishes.remove(Fetish.FETISH_IMPREGNATION);
 		}
 
-		generateDesires(character);
+		generateDesires(character, availableFetishes);
 	}
 
-	public static void generateDesires(GameCharacter character) {
+        public static void generateDesires(GameCharacter character) {
+	    List<Fetish> wantedFetishes = getAllowedFetishes(character);
+	    wantedFetishes.removeAll(character.getFetishes(false));
+	    generateDesires(character, wantedFetishes);
+	}
 
-		List<Fetish> availableFetishes = getAllowedFetishes(character);
-		availableFetishes.removeAll(character.getFetishes(false));
-		availableFetishes.removeIf((f) -> !f.getFetishesForAutomaticUnlock().isEmpty()); //Do not allow derived fetishes
-		for(Fetish f : character.getFetishes(false)) {
-			switch(f) {
-				default:
-					break;
-				// Related fetishes cannot be loved and disliked at the same time:
-				case FETISH_PREGNANCY:
-					availableFetishes.remove(Fetish.FETISH_VAGINAL_RECEIVING);
-					break;
-				case FETISH_IMPREGNATION:
-					availableFetishes.remove(Fetish.FETISH_VAGINAL_GIVING);
-					break;
-			}
-		}
+        public static void generateDesires(GameCharacter character, List<Fetish> wantedFetishes) {
+	        List<Fetish> availableFetishes = getAllowedFetishes(character); // These are actually "available for negative desires"
+	        availableFetishes.removeAll(character.getFetishes(false));
+	        availableFetishes.removeIf((f) -> !f.getFetishesForAutomaticUnlock().isEmpty()); //Do not allow derived fetishes
 
-		if(!Main.getProperties().hasValue(PropertyValue.analContent)) {
-			availableFetishes.remove(Fetish.FETISH_ANAL_GIVING);
-			availableFetishes.remove(Fetish.FETISH_ANAL_RECEIVING);
-		}
-
-		if(!Main.getProperties().hasValue(PropertyValue.footContent)) {
-			availableFetishes.remove(Fetish.FETISH_FOOT_GIVING);
-			availableFetishes.remove(Fetish.FETISH_FOOT_RECEIVING);
-		}
+		wantedFetishes.removeIf((f) -> !f.getFetishesForAutomaticUnlock().isEmpty());
 
 		// Desires:
 		int[] posDesireProb = new int[] {1, 1, 2, 2, 2, 3, 3};
@@ -2105,21 +2164,44 @@ public class CharacterUtils {
 
 		int desiresAssigned = 0;
 		List<Fetish> fetishesLiked = new ArrayList<>(character.getFetishes(false));
-		while(desiresAssigned < numberOfPositiveDesires && !availableFetishes.isEmpty()) {
-			Fetish f = Util.randomItemFrom(availableFetishes);
-			character.setFetishDesire(f, FetishDesire.THREE_LIKE);
+		while(desiresAssigned < numberOfPositiveDesires && !wantedFetishes.isEmpty()) {
+			Fetish f = Util.randomItemFrom(wantedFetishes);
+			character.setFetishDesire(f, FetishDesire.THREE_LIKE); // Why not FOUR_LOVE?
 			availableFetishes.remove(f);
+			while(wantedFetishes.remove(f)) {}
 			fetishesLiked.add(f);
 			desiresAssigned++;
 		}
 
-		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && character.hasVagina() && availableFetishes.contains(Fetish.FETISH_PREGNANCY)) {
+		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && wantedFetishes.contains(Fetish.FETISH_PREGNANCY)) {
 			character.setFetishDesire(Fetish.FETISH_PREGNANCY, FetishDesire.THREE_LIKE);
+			fetishesLiked.add(Fetish.FETISH_PREGNANCY);
+		        availableFetishes.remove(Fetish.FETISH_PREGNANCY);
 		}
-		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && character.hasPenis() && availableFetishes.contains(Fetish.FETISH_IMPREGNATION)) {
+		if(character.getRace()==Race.RABBIT_MORPH && Math.random()<0.8f && wantedFetishes.contains(Fetish.FETISH_IMPREGNATION)) {
 			character.setFetishDesire(Fetish.FETISH_IMPREGNATION, FetishDesire.THREE_LIKE);
+			fetishesLiked.add(Fetish.FETISH_IMPREGNATION);
+			availableFetishes.remove(Fetish.FETISH_IMPREGNATION);
 		}
 
+		if(character.getRace()==Race.SLIME && Math.random()<0.8f && wantedFetishes.contains(Fetish.FETISH_CUM_ADDICT)) {
+			character.setFetishDesire(Fetish.FETISH_CUM_ADDICT, FetishDesire.THREE_LIKE);
+			fetishesLiked.add(Fetish.FETISH_CUM_ADDICT);
+			availableFetishes.remove(Fetish.FETISH_CUM_ADDICT);
+		}
+
+		if(character.hasFetish(Fetish.FETISH_INCEST)) { // Finding things related to (prior) reproduction arousing!
+		    availableFetishes.remove(Fetish.FETISH_VAGINAL_RECEIVING);
+		    availableFetishes.remove(Fetish.FETISH_PENIS_RECEIVING);
+		    availableFetishes.remove(Fetish.FETISH_CUM_ADDICT);
+		    availableFetishes.remove(Fetish.FETISH_PREGNANCY);
+		    availableFetishes.remove(Fetish.FETISH_LACTATION_SELF);
+		    availableFetishes.remove(Fetish.FETISH_BREASTS_SELF);
+		    availableFetishes.remove(Fetish.FETISH_VAGINAL_GIVING);
+		    availableFetishes.remove(Fetish.FETISH_PENIS_GIVING);
+		    availableFetishes.remove(Fetish.FETISH_CUM_STUD);
+		    availableFetishes.remove(Fetish.FETISH_IMPREGNATION);
+		}
 
 		// Disliked fetishes:
 		// Related fetishes cannot be liked and disliked at the same time:
@@ -2133,18 +2215,50 @@ public class CharacterUtils {
 				case FETISH_VAGINAL_GIVING:
 					availableFetishes.remove(Fetish.FETISH_PENIS_GIVING);
 					break;
+			        case FETISH_CUM_ADDICT:
+				        availableFetishes.remove(Fetish.FETISH_PENIS_RECEIVING);
+					break;
+			        case FETISH_CUM_STUD:
+				        availableFetishes.remove(Fetish.FETISH_PENIS_GIVING);
+					break;
+			        case FETISH_PENIS_RECEIVING:
+				        availableFetishes.remove(Fetish.FETISH_CUM_ADDICT);
+					break;
+			        case FETISH_PENIS_GIVING:
+				        availableFetishes.remove(Fetish.FETISH_CUM_STUD);
+					break;
 				case FETISH_PREGNANCY:
 					availableFetishes.remove(Fetish.FETISH_VAGINAL_RECEIVING);
 					availableFetishes.remove(Fetish.FETISH_PENIS_RECEIVING);
 					availableFetishes.remove(Fetish.FETISH_CUM_ADDICT);
+					availableFetishes.remove(Fetish.FETISH_LACTATION_SELF);
+					availableFetishes.remove(Fetish.FETISH_BREASTS_SELF);
 					break;
 				case FETISH_IMPREGNATION:
 					availableFetishes.remove(Fetish.FETISH_VAGINAL_GIVING);
 					availableFetishes.remove(Fetish.FETISH_PENIS_GIVING);
 					availableFetishes.remove(Fetish.FETISH_CUM_STUD);
 					break;
+			        case FETISH_MASOCHIST:
 				case FETISH_NON_CON_SUB:
-					availableFetishes.remove(Fetish.FETISH_SUBMISSIVE);
+			        case FETISH_DENIAL_SELF:
+				        availableFetishes.remove(Fetish.FETISH_SUBMISSIVE); // Not sure about this one - concealed submissiveness?
+					availableFetishes.remove(Fetish.FETISH_MASOCHIST);
+					break;
+			        case FETISH_NON_CON_DOM:
+			        case FETISH_SADIST:
+			        case FETISH_DENIAL:
+				        availableFetishes.remove(Fetish.FETISH_DOMINANT);
+					availableFetishes.remove(Fetish.FETISH_SADIST);
+					break;
+			        case FETISH_VOYEURIST:
+				        availableFetishes.remove(Fetish.FETISH_MASTURBATION);
+					break;
+			        case FETISH_LACTATION_SELF:
+				        availableFetishes.remove(Fetish.FETISH_BREASTS_SELF);
+					break;
+			        case FETISH_LACTATION_OTHERS:
+				        availableFetishes.remove(Fetish.FETISH_BREASTS_OTHERS);
 					break;
 			}
 		}
@@ -2163,6 +2277,13 @@ public class CharacterUtils {
 		if(character.getRace()==Race.RABBIT_MORPH) {
 			availableFetishes.remove(Fetish.FETISH_PREGNANCY);
 			availableFetishes.remove(Fetish.FETISH_IMPREGNATION);
+		}
+		if(character.getRace()==Race.SLIME) {
+		        availableFetishes.remove(Fetish.FETISH_CUM_ADDICT);
+		}
+		if(character.getRace()==Race.COW_MORPH) {
+		        availableFetishes.remove(Fetish.FETISH_BREASTS_SELF);
+		        availableFetishes.remove(Fetish.FETISH_LACTATION_SELF);
 		}
 
 		// Remove 'natural' fetish dislikes:
