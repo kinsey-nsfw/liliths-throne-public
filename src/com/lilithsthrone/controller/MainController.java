@@ -1949,6 +1949,7 @@ public class MainController implements Initializable {
 		} else {
 			charactersBeingRendered.addAll(Main.game.getCharactersPresent());
 			
+			if(Main.game.isStarted()) {
 			int i=0;
 			for(Population pop : Main.game.getPlayer().getLocationPlace().getPlaceType().getPopulation()) {
 				id = "PLACE_POPULATION_"+i;
@@ -1966,6 +1967,7 @@ public class MainController implements Initializable {
 			}
 				i++;
 			}
+		}
 		}
 		
 		charactersBeingRendered.remove(Main.game.getPlayer());
@@ -2351,11 +2353,11 @@ public class MainController implements Initializable {
 									return false;
 								}
 								@Override
-								public SexType getForeplayPreference(NPC character, GameCharacter targetedCharacter) {
+								public SexType getForeplayPreference(GameCharacter character, GameCharacter targetedCharacter) {
 									return new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaOrifice.VAGINA);
 								}
 								@Override
-								public SexType getMainSexPreference(NPC character, GameCharacter targetedCharacter) {
+								public SexType getMainSexPreference(GameCharacter character, GameCharacter targetedCharacter) {
 									return new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaOrifice.VAGINA);
 								}
 							},

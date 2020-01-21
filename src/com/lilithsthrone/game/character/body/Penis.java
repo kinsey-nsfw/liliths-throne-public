@@ -12,7 +12,7 @@ import com.lilithsthrone.game.character.body.valueEnums.OrificeElasticity;
 import com.lilithsthrone.game.character.body.valueEnums.OrificeModifier;
 import com.lilithsthrone.game.character.body.valueEnums.OrificePlasticity;
 import com.lilithsthrone.game.character.body.valueEnums.PenetrationModifier;
-import com.lilithsthrone.game.character.body.valueEnums.PenisGirth;
+import com.lilithsthrone.game.character.body.valueEnums.PenetrationGirth;
 import com.lilithsthrone.game.character.body.valueEnums.PenisSize;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
@@ -48,7 +48,7 @@ public class Penis implements BodyPartInterface {
 		} else {
 			this.size = Math.min(PenisSize.SEVEN_STALLION.getMaximumValue(), size);
 		}
-		this.girth = Math.min(PenisGirth.FOUR_FAT.getValue(), girth);
+		this.girth = Math.min(PenetrationGirth.FOUR_FAT.getValue(), girth);
 		pierced = false;
 		virgin = true;
 
@@ -564,8 +564,8 @@ public class Penis implements BodyPartInterface {
 
 	// Girth:
 
-	public PenisGirth getGirth() {
-		return PenisGirth.getPenisGirthFromInt(girth);
+	public PenetrationGirth getGirth() {
+		return PenetrationGirth.getGirthFromInt(girth);
 	}
 
 	public int getRawGirthValue() {
@@ -577,7 +577,7 @@ public class Penis implements BodyPartInterface {
 	 */
 	public String setPenisGirth(GameCharacter owner, int girth) {
 		if(owner==null) {
-			this.girth = Math.max(0, Math.min(girth, PenisGirth.FOUR_FAT.getValue()));
+			this.girth = Math.max(0, Math.min(girth, PenetrationGirth.FOUR_FAT.getValue()));
 			return "";
 		}
 
@@ -592,10 +592,10 @@ public class Penis implements BodyPartInterface {
 				girthChange = 0 - this.girth;
 				this.girth = 0;
 			}
-		} else if (girth >= PenisGirth.FOUR_FAT.getValue()) {
-			if (this.girth != PenisGirth.FOUR_FAT.getValue()) {
-				girthChange = PenisGirth.FOUR_FAT.getValue() - this.girth;
-				this.girth = PenisGirth.FOUR_FAT.getValue();
+		} else if (girth >= PenetrationGirth.FOUR_FAT.getValue()) {
+			if (this.girth != PenetrationGirth.FOUR_FAT.getValue()) {
+				girthChange = PenetrationGirth.FOUR_FAT.getValue() - this.girth;
+				this.girth = PenetrationGirth.FOUR_FAT.getValue();
 			}
 		} else {
 			if (this.girth != girth) {
