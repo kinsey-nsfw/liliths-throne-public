@@ -1,6 +1,5 @@
 package com.lilithsthrone.game.sex.sexActions.baseActionsSelfPartner;
-import com.lilithsthrone.game.character.attributes.CorruptionLevel;
-import com.lilithsthrone.game.character.npc.NPC;
+import com.lilithsthrone.game.character.attributes.CorruptionLevel;
 import com.lilithsthrone.game.sex.ArousalIncrease;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
 import com.lilithsthrone.game.sex.SexAreaPenetration;
@@ -29,15 +28,15 @@ public class PartnerSelfTailMouth {
 		public SexActionLimitation getLimitation() {
 			return SexActionLimitation.NPC_ONLY;
 		}
-		
+
 		@Override
 		public boolean isBaseRequirementsMet() {
 			return !Main.sex.hasLubricationTypeFromAnyone(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.TAIL)
 					&& Main.sex.isInForeplay(Main.sex.getCharacterPerformingAction())
-					&& (Main.sex.getForeplayPreference((NPC) Main.sex.getCharacterPerformingAction(), Main.sex.getCharacterTargetedForSexAction(this))!=null
-						&& Main.sex.getForeplayPreference((NPC) Main.sex.getCharacterPerformingAction(), Main.sex.getCharacterTargetedForSexAction(this)).getPerformingSexArea()==SexAreaPenetration.TAIL);
+					&& (Main.sex.getForeplayPreference(Main.sex.getCharacterPerformingAction(), Main.sex.getCharacterTargetedForSexAction(this))!=null
+						&& Main.sex.getForeplayPreference(Main.sex.getCharacterPerformingAction(), Main.sex.getCharacterTargetedForSexAction(this)).getPerformingSexArea()==SexAreaPenetration.TAIL);
 		}
-		
+
 		@Override
 		public String getActionTitle() {
 			return "Lubricate tail";
@@ -53,13 +52,13 @@ public class PartnerSelfTailMouth {
 			return "Lifting [npc.her] [npc.tail+] up to [npc.her] mouth, [npc.name] slides [npc.her] [npc.tail+] past [npc.her] [npc.lips+],"
 					+ " before lewdly sucking on it for a moment in order to get it well lubricated with [npc.her] saliva.";
 		}
-		
+
 		@Override
 		public void applyEffects() {
 			Main.sex.transferLubrication(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.TAIL, Main.sex.getCharacterPerformingAction(), SexAreaOrifice.MOUTH);
 		}
 	};
-	
+
 	public static final SexAction PARTNER_SELF_TAIL_MOUTH_PENETRATION = new SexAction(
 			SexActionType.START_ONGOING,
 			ArousalIncrease.ONE_MINIMUM,
@@ -71,7 +70,7 @@ public class PartnerSelfTailMouth {
 		public SexActionLimitation getLimitation() {
 			return SexActionLimitation.NPC_ONLY;
 		}
-		
+
 		@Override
 		public String getActionTitle() {
 			return "Suck tail (self)";
@@ -87,7 +86,7 @@ public class PartnerSelfTailMouth {
 			return "Snaking [npc.her] [npc.tail] up to [npc.her] mouth, [npc.name] slides the tip past [npc.her] [npc.lips+] before starting to lewdly suck on it.";
 		}
 	};
-	
+
 	public static final SexAction PARTNER_SELF_FINGER_MOUTH_STOP_PENETRATION = new SexAction(
 			SexActionType.STOP_ONGOING,
 			ArousalIncrease.ONE_MINIMUM,
@@ -99,7 +98,7 @@ public class PartnerSelfTailMouth {
 		public SexActionLimitation getLimitation() {
 			return SexActionLimitation.NPC_ONLY;
 		}
-		
+
 		@Override
 		public String getActionTitle() {
 			return "Stop sucking tail (self)";

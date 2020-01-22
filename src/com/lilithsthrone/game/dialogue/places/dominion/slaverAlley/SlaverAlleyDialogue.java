@@ -1,5 +1,5 @@
 package com.lilithsthrone.game.dialogue.places.dominion.slaverAlley;
-import java.io.File;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,7 +58,7 @@ import com.lilithsthrone.world.places.PlaceType;
 public class SlaverAlleyDialogue {
 
 	public static void dailyReset() {
-		
+
 //		List<String> ids = Main.game.getNpc(Finch.class).getSlavesOwned();
 //		for(String id : ids) {
 //			NPC slaveToRemove = (NPC) Main.game.getNPCById(id);
@@ -73,7 +73,7 @@ public class SlaverAlleyDialogue {
 			}
 		}
 		Main.game.getNpc(Finch.class).removeAllSlaves();
-		
+
 		// Female stall:
 		Gender[] genders = new Gender[] {Gender.F_V_B_FEMALE, Gender.F_V_B_FEMALE, Gender.F_P_V_B_FUTANARI};
 		for(int i=0; i<genders.length; i++) {
@@ -84,13 +84,13 @@ public class SlaverAlleyDialogue {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			slave.setLocation(WorldType.SLAVER_ALLEY, PlaceType.SLAVER_ALLEY_STALL_FEMALES, true);
 			slave.resetInventory(true);
 			slave.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", Colour.CLOTHING_GOLD, false), true, Main.game.getNpc(Finch.class));
 			Main.game.getNpc(Finch.class).addSlave(slave);
 			slave.setPlayerKnowsName(true);
-			
+
 			slave.addFetish(Fetish.FETISH_SUBMISSIVE);
 			slave.addFetish(Fetish.FETISH_VAGINAL_RECEIVING);
 			slave.addFetish(Fetish.FETISH_ORAL_GIVING);
@@ -112,13 +112,13 @@ public class SlaverAlleyDialogue {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			slave.setLocation(WorldType.SLAVER_ALLEY, PlaceType.SLAVER_ALLEY_STALL_MALES, true);
 			slave.resetInventory(true);
 			slave.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", Colour.CLOTHING_BLACK_STEEL, false), true, Main.game.getNpc(Finch.class));
 			Main.game.getNpc(Finch.class).addSlave(slave);
 			slave.setPlayerKnowsName(true);
-			
+
 			slave.addFetish(Fetish.FETISH_DOMINANT);
 			slave.addFetish(Fetish.FETISH_CUM_STUD);
 			slave.removePersonalityTrait(PersonalityTrait.COWARDLY);
@@ -130,14 +130,17 @@ public class SlaverAlleyDialogue {
 
 		// Anal stall:
 		for(int i=0; i<3; i++) {
-			NPC slave = new DominionAlleywayAttacker(Gender.getGenderFromUserPreferences(false, false), false, NPCGenerationFlag.NO_CLOTHING_EQUIP);
+		    NPC slave = new DominionAlleywayAttacker(Gender.getGenderFromUserPreferences(false,
+												 (i==0 ||
+												  (i==1 && (!Main.game.isRimmingContentEnabled())))),
+							     false, NPCGenerationFlag.NO_CLOTHING_EQUIP);
 			slave.setHistory(Occupation.NPC_SLAVE);
 			try {
 				Main.game.addNPC(slave, false);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			slave.setLocation(WorldType.SLAVER_ALLEY, PlaceType.SLAVER_ALLEY_STALL_ANAL, true);
 			slave.resetInventory(true);
 			slave.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", Colour.CLOTHING_BLACK_STEEL, false), true, Main.game.getNpc(Finch.class));
@@ -150,13 +153,13 @@ public class SlaverAlleyDialogue {
 			}
 			Main.game.getNpc(Finch.class).addSlave(slave);
 			slave.setPlayerKnowsName(true);
-			
+
 			slave.setAssWetness(Util.randomItemFrom(Util.newArrayListOfValues(Wetness.FOUR_SLIMY, Wetness.FIVE_SLOPPY, Wetness.SIX_SOPPING_WET, Wetness.SEVEN_DROOLING)).getValue());
 			slave.setAssBleached(true);
-			slave.setAssCapacity(Util.random.nextInt(Capacity.ONE_EXTREMELY_TIGHT.getMaximumValue()), true);
+			slave.setAssCapacity(Util.random.nextInt(Capacity.ONE_EXTREMELY_TIGHT.getMaximumValue()), true); // plasticity?
 			slave.setAssVirgin(false);
 			Main.game.getPlayer().setKnowsCharacterArea(CoverableArea.ANUS, slave, true);
-			
+
 			slave.addFetish(Fetish.FETISH_ANAL_GIVING);
 			slave.addFetish(Fetish.FETISH_ANAL_RECEIVING);
 			slave.setObedience(75);
@@ -171,17 +174,17 @@ public class SlaverAlleyDialogue {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			slave.setLocation(WorldType.SLAVER_ALLEY, PlaceType.SLAVER_ALLEY_STALL_VAGINAL, true);
 			slave.resetInventory(true);
 			slave.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", Colour.CLOTHING_BLACK_STEEL, false), true, Main.game.getNpc(Finch.class));
 			Main.game.getNpc(Finch.class).addSlave(slave);
 			slave.setPlayerKnowsName(true);
-			
+
 			slave.setVaginaWetness(Util.randomItemFrom(Util.newArrayListOfValues(Wetness.FOUR_SLIMY, Wetness.FIVE_SLOPPY, Wetness.SIX_SOPPING_WET, Wetness.SEVEN_DROOLING)).getValue());
 			slave.setVaginaCapacity(Util.random.nextInt(Capacity.ONE_EXTREMELY_TIGHT.getMaximumValue()), true);
 			slave.setVaginaVirgin(true);
-			
+
 			slave.addFetish(Fetish.FETISH_VAGINAL_RECEIVING);
 			slave.addFetish(Fetish.FETISH_VAGINAL_GIVING);
 			slave.setObedience(75);
@@ -196,7 +199,7 @@ public class SlaverAlleyDialogue {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			slave.setLocation(WorldType.SLAVER_ALLEY, PlaceType.SLAVER_ALLEY_STALL_ORAL, true);
 			slave.resetInventory(true);
 			slave.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_bdsm_metal_collar", Colour.CLOTHING_BLACK_STEEL, false), true, Main.game.getNpc(Finch.class));
@@ -217,7 +220,7 @@ public class SlaverAlleyDialogue {
 			slave.setObedience(75);
 		}
 	}
-	
+
 	public static void stocksReset(){
 		List<NPC> npcsToBanish = new ArrayList<>();
 		for(NPC npc : Main.game.getCharactersPresent(Main.game.getWorlds().get(WorldType.SLAVER_ALLEY).getCell(PlaceType.SLAVER_ALLEY_PUBLIC_STOCKS))) {
@@ -228,9 +231,9 @@ public class SlaverAlleyDialogue {
 		for(NPC npc : npcsToBanish) {
 			Main.game.banishNPC(npc);
 		}
-		
+
 		for(int i=0; i<4; i++) {
-			SlaveInStocks slave = new SlaveInStocks(Gender.getGenderFromUserPreferences(false, false));
+			SlaveInStocks slave = new SlaveInStocks(Gender.getGenderFromUserPreferences(i==0, i==1));
 			try {
 				Main.game.addNPC(slave, false);
 			} catch (Exception e) {
@@ -239,16 +242,16 @@ public class SlaverAlleyDialogue {
 			if(Math.random()>0.5f) {
 				Main.game.getNpc(GenericFemaleNPC.class).addSlave(slave);
 			} else {
-				Main.game.getNpc(GenericMaleNPC.class).addSlave(slave);	
+				Main.game.getNpc(GenericMaleNPC.class).addSlave(slave);
 			}
 			slave.removeSlavePermissionSetting(SlavePermission.CLEANLINESS, SlavePermissionSetting.CLEANLINESS_WASH_BODY);
 			slave.removeSlavePermissionSetting(SlavePermission.CLEANLINESS, SlavePermissionSetting.CLEANLINESS_WASH_CLOTHES);
 		}
 	}
-	
-	
+
+
 	public static final DialogueNode OUTSIDE = new DialogueNode("Slaver Alley", "-", false) {
-		
+
 		@Override
 		public int getSecondsPassed() {
 			return CityPlaces.TRAVEL_TIME_STREET;
@@ -258,7 +261,7 @@ public class SlaverAlleyDialogue {
 		public String getContent() {
 			return UtilText.parseFromXMLFile("places/dominion/slaverAlley/genericDialogue", "OUTSIDE");
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if (index == 1) {
@@ -274,7 +277,7 @@ public class SlaverAlleyDialogue {
 			}
 		}
 	};
-	
+
 	public static final DialogueNode GATEWAY = new DialogueNode("Gateway", ".", false) {
 
 		@Override
@@ -297,7 +300,7 @@ public class SlaverAlleyDialogue {
 			}
 		}
 	};
-	
+
 	public static final DialogueNode ALLEYWAY = new DialogueNode("Alleyway", ".", false) {
 
 		@Override
@@ -315,7 +318,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_FEMALE = new DialogueNode("A Woman's Touch", ".", false) {
 
 		@Override
@@ -345,7 +348,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_MALE = new DialogueNode("Iron & Steel", ".", false) {
 
 		@Override
@@ -375,7 +378,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_ANAL = new DialogueNode("The Rear Entrance", ".", false) {
 
 		@Override
@@ -405,7 +408,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_VAGINAL = new DialogueNode("White Lilies", ".", false) {
 
 		@Override
@@ -435,7 +438,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_ORAL = new DialogueNode("Viva Voce", ".", false) {
 
 		@Override
@@ -465,7 +468,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_STATUE = new DialogueNode("Statue of the Fallen Angel", ".", false) {
 
 		@Override
@@ -487,7 +490,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_EXCLUSIVE = new DialogueNode("Zaibatsu Exchange", ".", false) {
 
 		@Override
@@ -505,7 +508,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_BULK = new DialogueNode("Royal Dominion Company", ".", false) {
 
 		@Override
@@ -523,7 +526,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL_CAFE = new DialogueNode("", ".", false) {
 
 		@Override
@@ -541,7 +544,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode MARKET_STALL = new DialogueNode("", ".", false) {
 
 		@Override
@@ -559,7 +562,7 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
+
 	public static final DialogueNode BOUNTY_HUNTERS = new DialogueNode("Bounty Hunter Lodge", ".", false) {
 		@Override
 		public int getSecondsPassed() {
@@ -596,7 +599,7 @@ public class SlaverAlleyDialogue {
 		public Response getResponse(int responseTab, int index) {
 			if(index==1 && Main.game.getCharactersPresent().contains(Main.game.getNpc(Silence.class))) {
 				return new Response("Silence", "Head over and say something to Silence...<br/>[style.italicsBad(A mini-quest involving Silence and Shadow will be added soon!)]", null);
-				
+
 			} else if(index==0) {
 				return new Response("Leave", "Turn around and exit the establishment...", BOUNTY_HUNTERS) {
 					@Override
@@ -608,8 +611,8 @@ public class SlaverAlleyDialogue {
 			return null;
 		}
 	};
-	
-	
+
+
 	public static final DialogueNode AUCTION_BLOCK = new DialogueNode("Auctioning block", ".", false) {
 
 		@Override
@@ -635,13 +638,13 @@ public class SlaverAlleyDialogue {
 			}
 		}
 	};
-	
+
 	public static final DialogueNode AUCTION_BLOCK_LIST = new DialogueNode("Auctioning block", ".", true) {
 
 		@Override
 		public String getContent() {
 			UtilText.nodeContentSB.setLength(0);
-			
+
 			UtilText.nodeContentSB.append(
 					"<p>" // captured or slaves for public sale (seized assets)
 						+ "You make your way through the pressing crowds and take your place on the outskirts of the main bidding area."
@@ -675,23 +678,23 @@ public class SlaverAlleyDialogue {
 								+ "Bid"
 							+ "</div>"
 						+ "</div>");
-			
+
 			List<NPC> charactersPresent = new ArrayList<>(Main.game.getCharactersPresent());
 			charactersPresent.removeIf((npc) -> Main.game.getPlayer().getCompanions().contains(npc));
-			
+
 			Collections.sort(charactersPresent, (e1, e2) -> e1.getName(true).compareTo(e2.getName(true)));
-			
+
 			if(charactersPresent.isEmpty()) {
 				UtilText.nodeContentSB.append(
 						"<div class='container-full-width' style='margin-bottom:0; text-align:center;'>"
 								+ "<b>There are no upcoming auctions...</b>"
 						+ "</div>");
-				
+
 			} else {
 				int i=0;
 				for(NPC slave : charactersPresent){
 					boolean alternateBackground = i%2==0;
-					
+
 					UtilText.nodeContentSB.append(UtilText.parse(slave,
 							"<div class='container-full-width inner' style='margin-bottom:0;"+(alternateBackground?"background:"+Colour.BACKGROUND_ALT.toWebHexString()+";'":"'")+"'>"
 								+ "<div style='width:40%; float:left; margin:0; padding:0; text-align:center;'>"
@@ -718,9 +721,9 @@ public class SlaverAlleyDialogue {
 					i++;
 				}
 			}
-			
+
 			UtilText.nodeContentSB.append("</p>");
-			
+
 			return UtilText.nodeContentSB.toString();
 		}
 
@@ -728,16 +731,16 @@ public class SlaverAlleyDialogue {
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
 				return new Response("Import", "View the character import screen.", AUCTION_IMPORT);
-				
+
 			} else if(index==0) {
 				return new Response("Back", "Walk away from the auction block.", AUCTION_BLOCK);
-				
+
 			} else {
 				return null;
 			}
 		}
 	};
-	
+
 	public static void setupBidding(NPC slaveToBidOn) {
 		biddingNPC = slaveToBidOn;
 		biddingPrice = (int) (biddingNPC.getValueAsSlave(true)*0.5f);
@@ -746,14 +749,14 @@ public class SlaverAlleyDialogue {
 		playerBidLeader = false;
 		currentRivalBidder = SlaveAuctionBidder.generateNewSlaveAuctionBidder(biddingNPC);
 	}
-	
+
 	public static final DialogueNode AUCTION_IMPORT = new DialogueNode("Auctioning block", ".", true) {
 
 		@Override
 		public String getContent() {
 			return "";
 		}
-		
+
 		@Override
 		public String getHeaderContent(){
 			StringBuilder saveLoadSB = new StringBuilder();
@@ -765,46 +768,46 @@ public class SlaverAlleyDialogue {
 					+ "</p>"
 					+ "<p>"
 						+ "<table align='center'>");
-			
+
 			Main.getSlavesForImport().sort(Comparator.comparingLong(File::lastModified).reversed());
-			
+
 			for(File f : Main.getSlavesForImport()){
 				saveLoadSB.append(getImportRow(f.getName()));
 			}
-			
+
 			saveLoadSB.append("</table>"
 					+ "</p>"
 					+ "<p id='hiddenPField' style='display:none;'></p>");
-			
+
 			return saveLoadSB.toString();
 		}
 
 		@Override
 		public Response getResponse(int responseTab, int index) {
-			
+
 			if(index==0) {
 				return new Response("Back", "Return to the previous screen.", AUCTION_BLOCK_LIST);
-				
+
 			} else {
 				return null;
 			}
 		}
 	};
-	
+
 	private static NPC biddingNPC = null;
 	private static int biddingPrice = 0;
 	private static int biddingRounds = 0;
 	private static int biddingRoundsTotal = 1;
 	private static boolean playerBidLeader = false;
 	private static SlaveAuctionBidder currentRivalBidder = null;
-	
+
 	public static final DialogueNode AUCTION_BIDDING = new DialogueNode("Auctioning block", ".", true) {
-		
+
 		@Override
 		public boolean isContinuesDialogue() {
 			return biddingRounds!=0;
 		}
-		
+
 		@Override
 		public String getContent() {
 			if(biddingRounds==0) {
@@ -820,7 +823,7 @@ public class SlaverAlleyDialogue {
 						+ "<p>"
 							+ "<i>The current bid is "+UtilText.formatAsMoney(biddingPrice, "span")+", which means that you'll need to bid "+UtilText.formatAsMoney(biddingPrice+100, "span")+" to get in the lead for buying [npc.name].</i>"
 						+ "</p>");
-				
+
 			} if(biddingRounds==biddingRoundsTotal) {
 				if(playerBidLeader) {
 					return UtilText.parse(biddingNPC,
@@ -850,7 +853,7 @@ public class SlaverAlleyDialogue {
 								+ UtilText.parseNPCSpeech(currentRivalBidder.getRandomSuccessfulBiddingComment(), (currentRivalBidder.getGender().isFeminine()?Femininity.FEMININE:Femininity.MASCULINE_STRONG))
 							+ "</p>");
 				}
-				
+
 			} else {
 				return UtilText.parse(biddingNPC,
 						"<p>"
@@ -861,7 +864,7 @@ public class SlaverAlleyDialogue {
 						+ "</p>");
 			}
 		}
-		
+
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(biddingRounds==biddingRoundsTotal) {
@@ -881,11 +884,11 @@ public class SlaverAlleyDialogue {
 							}
 						};
 					}
-					
+
 				} else {
 					return null;
 				}
-			
+
 			} else {
 				if(index==1) {
 					if(Main.game.getPlayer().getMoney()>=biddingPrice+100) {
@@ -905,7 +908,7 @@ public class SlaverAlleyDialogue {
 					} else {
 						return new Response("Bid "+UtilText.formatAsMoneyUncoloured(biddingPrice+100, "span"), "You can't afford a bid of "+(biddingPrice+100)+" flames, so you'll have to let this slave go to someone else.", null);
 					}
-					
+
 				} else if(index==2) {
 					return new Response("Stop bidding", UtilText.parse(biddingNPC, "Stop bidding, which will allow someone else to buy [npc.name]."), AUCTION_BIDDING) {
 						@Override
@@ -914,28 +917,34 @@ public class SlaverAlleyDialogue {
 							biddingRounds=biddingRoundsTotal;
 						}
 					};
-					
+
 				} else {
 					return null;
 				}
 			}
 		}
 	};
-	
+
 	private static void increaseBid() {
 		biddingRounds++;
 		if(biddingRounds!=biddingRoundsTotal) {
-			biddingPrice = (int) (biddingPrice * (1+(0.8f*Math.random())));
-			playerBidLeader = false;
+		    double biddingPriceIncrement = biddingPrice * 0.8f * Math.random();
+		    if(biddingPriceIncrement < 100) {
+			biddingPriceIncrement = 100;
+		    } else if(biddingPriceIncrement > 100) {
+			biddingPriceIncrement = Math.floor(biddingPriceIncrement/100f)*100f;
+		    }
+		    biddingPrice += biddingPriceIncrement;
+		    playerBidLeader = false;
 		}
 	}
-	
-	
+
+
 
 	private static String getImportRow(String name) {
 		String baseName = Util.getFileName(name);
 		String identifier = Util.getFileIdentifier(name);
-		
+
 		return "<tr>"
 				+ "<td style='min-width:200px;'>"
 					+ baseName
@@ -945,7 +954,7 @@ public class SlaverAlleyDialogue {
 				+ "</td>"
 				+ "</tr>";
 	}
-	
+
 	public static final DialogueNode PUBLIC_STOCKS = new DialogueNode("Public Stocks", ".", false) {
 
 		@Override
@@ -956,7 +965,7 @@ public class SlaverAlleyDialogue {
 		@Override
 		public String getContent() {
 			UtilText.nodeContentSB.setLength(0);
-			
+
 			UtilText.nodeContentSB.append("<p>"
 						+ "The collection of twenty-or-so public stocks, positioned right in the middle of a wide courtyard, is the first thing anyone sees when entering Slaver Alley."
 						+ " Used as a means of punishment for disobedient slaves, each one of the devices consists of a wooden frame, with holes for securing the occupant's arms and head."
@@ -970,14 +979,14 @@ public class SlaverAlleyDialogue {
 			List<String> sexAvailability = new ArrayList<>();
 
 			List<NPC> charactersPresent = Main.game.getNonCompanionCharactersPresent();
-			
+
 			for(NPC npc : charactersPresent) {
-				UtilText.nodeContentSB.append(UtilText.parse(npc, 
+				UtilText.nodeContentSB.append(UtilText.parse(npc,
 						"<p>"
 							+ "[npc.Name]," + (npc.getOwner().isPlayer()?" [style.boldArcane(who is your slave)], and is":"")
 							+ " <span style='color:"+npc.getGender().getColour().toWebHexString()+";'>[npc.a_gender]</span>"
 									+ " <span style='color:"+npc.getRace().getColour().toWebHexString()+";'>[npc.race]</span>, has been marked as available for"));
-				
+
 				sexAvailability.clear();
 				if(npc.hasSlaveJobSetting(SlaveJob.PUBLIC_STOCKS, SlaveJobSetting.SEX_ORAL)) {
 					sexAvailability.add(" <b style='color:"+Colour.BASE_PINK_LIGHT.toWebHexString()+";'>oral</b>");
@@ -988,7 +997,7 @@ public class SlaverAlleyDialogue {
 				if(npc.hasSlaveJobSetting(SlaveJob.PUBLIC_STOCKS, SlaveJobSetting.SEX_ANAL)) {
 					sexAvailability.add(" <b style='color:"+Colour.BASE_PINK_DEEP.toWebHexString()+";'>anal</b>");
 				}
-				
+
 				if(!sexAvailability.isEmpty()) {
 					UtilText.nodeContentSB.append(
 							Util.stringsToStringList(sexAvailability, false)
@@ -998,17 +1007,17 @@ public class SlaverAlleyDialogue {
 							" [style.boldBad(no penetration at all)].</p>");
 				}
 			}
-			
+
 			return UtilText.nodeContentSB.toString();
 		}
 
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			List<NPC> charactersPresent = Main.game.getNonCompanionCharactersPresent();
-			
+
 			if(index==0) {
 				return new Response("Complain", "You don't like the idea of slaves being publicly used. There appears to be an Enforcer watching over the area, so perhaps you should go and complain to him... (Not yet implemented!)", null);
-				
+
 			} else if(index <= charactersPresent.size()) {
 				GameCharacter slave = charactersPresent.get(index-1);
 				boolean ownedByPlayer = slave.isSlave() && slave.getOwner().isPlayer();
@@ -1039,7 +1048,7 @@ public class SlaverAlleyDialogue {
 			}
 		}
 	};
-	
+
 	public static final DialogueNode AFTER_STOCKS_SEX = new DialogueNode("Public Stocks", ".", true) {
 
 		@Override
@@ -1059,6 +1068,6 @@ public class SlaverAlleyDialogue {
 			}
 		}
 	};
-	
-	
+
+
 }
